@@ -82,22 +82,6 @@ int main(int argc, char *argv[])
         "Transient solver for incompressible, turbulent flow,"
         " using the PISO algorithm."
     );
-    vector exampleVector = vector::zero;
-    
-    Info << "vector:" << tab << exampleVector << endl;
-    
-    scalar listLength(5);
-    
-    List<vector> exampleVectorList(listLength,vector::zero);
-    
-    forAll(exampleVectorList, i)
-    {
-        vector& v = exampleVectorList[i];
-    
-        v = vector(i,2*i,3*i);
-    
-        Info << "vector:" << tab << v << endl;
-    }
 
     #include "postProcess.H"
 
