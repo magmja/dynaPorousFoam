@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "netPanel.C": "cpp"
+        "netPanel.C": "cpp",
+        "vector.C": "cpp"
     }
 }
