@@ -1,5 +1,5 @@
 // Solve the Momentum equation
-const scalar porosity(porousZones.porosity());
+// const scalar porosity(porousZones.porosity());
 
 MRF.correctBoundaryVelocity(U);
 
@@ -11,7 +11,8 @@ fvVectorMatrix UEqn
 );
 
 UEqn.relax();
-porousZones.addResistance(UEqn,nu,mesh,structuralPositions,structuralElements);
+
+porousZones.addResistance(UEqn,nu,mesh);
 
 
 fvOptions.constrain(UEqn);

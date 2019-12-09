@@ -121,33 +121,20 @@ int main(int argc, char *argv[])
 
         // read from outside 
         // need to confirm ... might be wrong data structure
-        volVectorField structuralPositions
+        IOdictionary structuralPositions
         (
             IOobject
             (
                 "posi",
-                runTime.timeName(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::NO_WRITE
-            ),
-            mesh
-        );
-        //- the structural elements
-        volVectorField structuralElements
-        (
-            IOobject
-            (
-                "surc",
                 runTime.constant(),
                 mesh,
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE
-            ),
-            mesh
+            )
         );
-        
-        porousZones.updatePoroField(porosityField, mesh, structuralPositions,structuralElements);
+
+        porousZones.readPosi(structuralPositions);
+        porousZones.updatePoroField(porosityField, mesh);
         
         
         runTime.write();

@@ -48,7 +48,7 @@ autoPtr<incompressible::turbulenceModel> turbulence
 
 volScalarField nu(laminarTransport.nu());
 
-
+Info<< "Before read netdict " << "\n" << endl;
 // 
 //- the net dictionary
 IOdictionary netDict
@@ -63,7 +63,41 @@ IOdictionary netDict
     )
 );
 
-//- the porosity field
+netPanel porousZones(netDict);
+
+Info<< "the porosity of the net is " << porousZones.porosity()<< "\n"<<endl;
+
+IOdictionary structuralPositions
+(
+    IOobject
+    (
+        "posi",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE
+    )
+);
+porousZones.readPosi(structuralPositions);
+//- the structural elements
+IOdictionary structuralElements
+(
+    IOobject
+    (
+        "surc",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE
+    )
+);
+porousZones.readSur(structuralElements);
+// constrcut net panel
+Info<< "the structuralPositions_memb of the net is " << porousZones.posi()<< "\n"<<endl;
+Info<< "the structuralElements_memb of the net is " << porousZones.sur()<< "\n"<<endl;
+
+
+Info<< "Before read porosity field " << "\n" << endl;
 volScalarField porosityField
 (
     IOobject
@@ -77,40 +111,12 @@ volScalarField porosityField
     mesh,
     1.0
 );
-
+Info<< "After read porosity field " << "\n" << endl;
 // read from outside 
 // need to confirm ... might be wrong data structure
 //- the structural point positions
-volVectorField structuralPositions
-(
-    IOobject
-    (
-        "posi",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::NO_WRITE
-    ),
-    mesh
-);
-//- the structural elements
-volVectorField structuralElements
-(
-    IOobject
-    (
-        "surc",
-        runTime.constant(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::NO_WRITE
-    ),
-    mesh
-);
 
-// constrcut net panel
-netPanel porousZones(netDict);
-
-porousZones.updatePoroField(porosityField, mesh, structuralPositions,structuralElements);
+porousZones.updatePoroField(porosityField, mesh);
 
 //- write the porosity field
 porosityField.write();

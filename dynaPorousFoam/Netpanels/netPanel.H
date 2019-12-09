@@ -45,14 +45,14 @@ class netPanel
 {
 protected:
     //- Private data
-        const dictionary             netDict_;
-        const dictionary             porousPropertiesDict_;
-        const scalar                 thickness_;  // thickness of the net panel
-        const scalar                 porosity_;
-        const dimensionedVector      D_;  //- porous resistance coefficient F
-        const dimensionedVector      F_;  // private Member fucntion
-              List<vector>           structuralPositions_;
-              List<vector>           structuralElements_;
+        const dictionary             netDict_memb;
+        const dictionary             porousPropertiesDict_memb;
+        const scalar                 thickness_memb;  // thickness of the net panel
+        const scalar                 porosity_memb;
+        const dimensionedVector      D_memb;  //- porous resistance coefficient F
+        const dimensionedVector      F_memb;  // private Member fucntion
+              List<vector>           structuralPositions_memb;
+              List<vector>           structuralElements_memb;
     //-Private member function    
         vector calcNorm
         (    
@@ -71,7 +71,7 @@ protected:
         void transformCoeffs
         (
             const dimensionedVector&      D,
-            dimensionedTensor&            d,
+            tensor&                       d,
             const List<vector>&           structuralPositions,
             const vector&                 structuralElementi
         ) const;
@@ -91,25 +91,33 @@ public:
         (
             fvVectorMatrix&         UEqn,
             const volScalarField&   nu,
-            const fvMesh&           mesh,
-            const List<vector>&     structuralPositions,
-            const List<vector>&     structuralElements
+            const fvMesh&           mesh
         )const;
 
     void updatePoroField
          (
              volScalarField&         porosityField,
-             fvMesh&                 mesh,
-             const List<vector>&     structuralPositions,
-             const List<vector>&     structuralElements
+             fvMesh&                 mesh
          )const;
     scalar porosity() const
         {
-            return porosity_;
+            return porosity_memb;
         };
 
-    void readSE(
-            const dictionary&        structuralPositions,
+    List<vector>  posi() const
+        {
+            return structuralPositions_memb;
+        };
+    List<vector>  sur() const
+        {
+            return structuralElements_memb;
+        };
+
+
+    void readPosi(
+            const dictionary&        structuralPositions
+    );
+    void readSur(
             const dictionary&        structuralElements
     );
 

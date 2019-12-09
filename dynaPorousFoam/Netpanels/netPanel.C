@@ -22,20 +22,19 @@ License
 void Foam::netPanel::transformCoeffs
 (
     const dimensionedVector&      D,
-    dimensionedTensor&            d,
-    const List<vector>&         structuralPositions,
+    tensor&                       d,
+    const List<vector>&           structuralPositions_memb,
     const vector&                 structuralElementi
 
 ) const
 {
+    const point pointI=structuralPositions_memb[structuralElementi[0]];
+    const point pointII=structuralPositions_memb[structuralElementi[1]];
+    const point pointIII=structuralPositions_memb[structuralElementi[2]];
     
-    const point pointI_=structuralPositions[structuralElementi[0]];
-    const point pointII_=structuralPositions[structuralElementi[1]];
-    const point pointIII_=structuralPositions[structuralElementi[2]];
-    
-    const vector a(pointI_-pointII_);
-    const vector b(pointIII_-pointII_);
-    const vector c(pointIII_-pointI_);
+    const vector a(pointI-pointII);
+    const vector b(pointIII-pointII);
+    const vector c(pointIII-pointI);
           vector norm(a^b/(mag(a^b)+SMALL));
     const vector x0(1,0,0);
     const vector y0(0,1,0);
@@ -76,23 +75,23 @@ void Foam::netPanel::transformCoeffs
         e2 = -e2;
     }
 
-    Info << "p1 is : " << pointI_ << "\n" << endl;
-    Info << "p2 is : " << pointII_ << "\n" << endl;
-    Info << "p3 is : " << pointIII_ << "\n" << endl;
+    // Info << "p1 is : " << pointI << "\n" << endl;
+    // Info << "p2 is : " << pointII << "\n" << endl;
+    // Info << "p3 is : " << pointIII << "\n" << endl;
 
-    Info << "e1 is : " << e1  << "\n" << endl;
-    Info << "e2 is : " << e2  << "\n" << endl;
-    Info << "e3 is : " << e3  << "\n" << endl;  
+    // Info << "e1 is : " << e1  << "\n" << endl;
+    // Info << "e2 is : " << e2  << "\n" << endl;
+    // Info << "e3 is : " << e3  << "\n" << endl;  
     // Info << "Tensor e is : " << e.value() << "\n" << endl;  
     const tensor e(
         e1&x0/(mag(e1*x0)+SMALL), e1&y0/(mag(e1*y0)+SMALL), e1&z0/(mag(e1*z0)+SMALL), 
         e2&x0/(mag(e2*x0)+SMALL), e2&y0/(mag(e2*y0)+SMALL), e2&z0/(mag(e2*z0)+SMALL), 
         e3&x0/(mag(e3*x0)+SMALL), e3&y0/(mag(e3*y0)+SMALL), e3&z0/(mag(e3*z0)+SMALL)); 
 
-    d.value().xx() = D.value().x();
-    d.value().yy() = D.value().y();
-    d.value().zz() = D.value().z();
-    d.value() = (e & d & e.T()).value();
+    d.xx() = D.value().x();
+    d.yy() = D.value().y();
+    d.zz() = D.value().z();
+    d = e & d & e.T();
 
 }
 
@@ -100,42 +99,42 @@ void Foam::netPanel::transformCoeffs
 bool Foam::netPanel::isInPorousZone
 (
     const point x,
-    const List<vector>&     structuralPositions,
+    const List<vector>&     structuralPositions_memb,
     const vector&           structuralElementi
 )const
 {
     bool result(false); // initial value 
 
-    const point pointI_=structuralPositions[structuralElementi[0]];
-    const point pointII_=structuralPositions[structuralElementi[1]];
-    const point pointIII_=structuralPositions[structuralElementi[2]];
-    vector norm_=calcNorm(pointI_,pointII_,pointIII_);
-    scalar dis(mag((x-pointI_)&norm_));
+    const point pointI=structuralPositions_memb[structuralElementi[0]];
+    const point pointII=structuralPositions_memb[structuralElementi[1]];
+    const point pointIII=structuralPositions_memb[structuralElementi[2]];
+    vector panelNorm=calcNorm(pointI,pointII,pointIII);
+    scalar dis(mag((x-pointI)&panelNorm));
     // define a const scalar as the distance between point x to net panel
-    if(dis <= thickness_)// distance is less than half thickness
+    if(dis <= thickness_memb)// distance is less than half thickness
     {
         scalar panelarea  // the area of the triangular net panel
              (
                  0.5*mag
                      (
-                          (pointI_-pointII_)
-                         ^(pointI_-pointIII_)
+                          (pointI-pointII)
+                         ^(pointI-pointIII)
                      )
              );
         vector projectedPoint(0,0,0); // initial the projected point is 0,0,0
-                if(((x-pointI_)&norm_)<0.0) // on the side of normal vector
+                if(((x-pointI)&panelNorm)<0.0) // on the side of normal vector
         {
-            projectedPoint=(x+norm_*dis);
+            projectedPoint=(x+panelNorm*dis);
         }
         else
         {
-            projectedPoint=(x-norm_*dis);
+            projectedPoint=(x-panelNorm*dis);
         }
         // projectedP is the projected point on the net panel
         scalar panelarea3(0.5*(
-                                    mag((projectedPoint-pointI_)^(projectedPoint-pointII_))+
-                                    mag((projectedPoint-pointI_)^(projectedPoint-pointIII_))+
-                                    mag((projectedPoint-pointII_)^(projectedPoint-pointIII_))
+                                    mag((projectedPoint-pointI)^(projectedPoint-pointII))+
+                                    mag((projectedPoint-pointI)^(projectedPoint-pointIII))+
+                                    mag((projectedPoint-pointII)^(projectedPoint-pointIII))
                                     )
                                 ); //  the area of the three trigular shapes.
         if(panelarea3<=SMALL+panelarea)
@@ -162,33 +161,30 @@ Foam::vector Foam::netPanel::calcNorm
 
 void Foam::netPanel::addResistance
 (
-            fvVectorMatrix&         UEqn,
-            const volScalarField&   nu,
-            const fvMesh&           mesh,
-            const List<vector>&   structuralPositions,
-            const List<vector>&   structuralElements
+    fvVectorMatrix&         UEqn,
+    const volScalarField&   nu,
+    const fvMesh&           mesh
 )const
 {
     const vectorField& centres(mesh.C());
-    forAll(structuralElements,Elementi)
+    forAll(structuralElements_memb,Elementi)
     {
-        dimensionedTensor d_(tensor::zero);
-        dimensionedTensor f_(tensor::zero);
-        transformCoeffs(D_,d_,structuralPositions,structuralElements[Elementi]);
-        transformCoeffs(F_,f_,structuralPositions,structuralElements[Elementi]);
-        tensor& dvalue = d_.value();
-        tensor& fvalue = f_.value();
+        tensor d_global(tensor::zero);
+        tensor f_global(tensor::zero);
+        transformCoeffs(D_memb,d_global,structuralPositions_memb,structuralElements_memb[Elementi]);
+        transformCoeffs(F_memb,f_global,structuralPositions_memb,structuralElements_memb[Elementi]);
         const scalarField V = mesh.V();
         vectorField& Usource = UEqn.source();
         const vectorField& U = UEqn.psi();
-
+        Info << "before add the source term, the f is " << f_global << "\n" << endl;
+        Info << "before add the source term, the F_memb is " << F_memb << "\n" << endl;
         forAll(centres, cellI)
         {
             if(
-                isInPorousZone(centres[cellI],structuralPositions,structuralElements[Elementi])
+                isInPorousZone(centres[cellI],structuralPositions_memb,structuralElements_memb[Elementi])
              )
              {
-                tensor dragCoeff = nu[cellI]*dvalue + 0.5*mag(U[cellI])*fvalue;
+                tensor dragCoeff = nu[cellI]*d_global + 0.5*mag(U[cellI])*f_global;
                 Usource[cellI] -=V[cellI]*dragCoeff & (U[cellI] );
              }
         }
@@ -198,10 +194,8 @@ void Foam::netPanel::addResistance
 
 void Foam::netPanel::updatePoroField
 (
-             volScalarField&         porosityField,
-             fvMesh&                 mesh,
-             const List<vector>&     structuralPositions,
-             const List<vector>&     structuralElements
+    volScalarField&         porosityField,
+    fvMesh&                 mesh
 )const
 {
     // step1 set all the cell as 1
@@ -212,28 +206,48 @@ void Foam::netPanel::updatePoroField
     // get the center of all the cells
     const vectorField& centres(mesh.C());
     // loop through all the structural emlements
-    forAll(structuralElements,Elementi)
+    forAll(structuralElements_memb,Elementi)
     {
         // loop through all the cell, 
         forAll(centres, cellI)
         {
-            if(isInPorousZone(centres[cellI],structuralPositions,structuralElements[Elementi]))
+            if(isInPorousZone(centres[cellI],structuralPositions_memb,structuralElements_memb[Elementi]))
             {
-                porosityField[cellI] = porosity_;
+                porosityField[cellI] = porosity_memb;
             }
         }
 
     }
 }
-void Foam::netPanel::readSE
+void Foam::netPanel::readPosi
 (
-    const dictionary&        structuralPositions,
+    const dictionary&        structuralPositions
+)
+{
+    scalar listLength(readScalar(structuralPositions.lookup("numOfPoint")));
+    List<vector> posi(listLength,vector::zero);
+    forAll(posi, i)
+    {
+        word pointname("p"+Foam::name(i));
+        posi[i]= structuralPositions.lookup(pointname);
+    }
+    structuralPositions_memb=posi;
+}    
+
+
+void Foam::netPanel::readSur
+(
     const dictionary&        structuralElements
 )
 {
-    
-    // todo 
-    //read the dictionary and assign the value to the two member 
+    scalar listLength(readScalar(structuralElements.lookup("numOfSurc")));
+    List<vector> sur(listLength,vector::zero);
+    forAll(sur, i)
+    {
+        word surname("e"+Foam::name(i));
+        sur[i]= structuralElements.lookup(surname);
+    }
+    structuralElements_memb=sur;
 }
 
 
@@ -248,16 +262,14 @@ Foam::netPanel::netPanel
     const dictionary&        netDict
 )
 :   // initial components
-    netDict_(netDict),
-    porousPropertiesDict_(netDict_.subDict("porousProperties")),
-    porosity_(readScalar(porousPropertiesDict_.lookup("porosity"))),
-    thickness_(readScalar(porousPropertiesDict_.lookup("halfthickness")))
-    // D_(readVector(porousPropertiesDict_.lookup("D"))),  // initial as zeros
-    // F_(readVector(porousPropertiesDict_.lookup("D")))  // initial as zeros
+    netDict_memb(netDict),
+    porousPropertiesDict_memb(netDict_memb.subDict("porousProperties")),
+    porosity_memb(readScalar(porousPropertiesDict_memb.lookup("porosity"))),
+    thickness_memb(readScalar(porousPropertiesDict_memb.lookup("halfthickness"))),
+    D_memb(porousPropertiesDict_memb.lookup("D")),
+    F_memb(porousPropertiesDict_memb.lookup("F"))
 {
-    dimensionedVector D_(porousPropertiesDict_.lookup("D"));
-    dimensionedVector F_(porousPropertiesDict_.lookup("F"));
-
+// creat the netpanel object
 }
 
 
