@@ -176,8 +176,8 @@ void Foam::netPanel::addResistance
         const scalarField V = mesh.V();
         vectorField& Usource = UEqn.source();
         const vectorField& U = UEqn.psi();
-        Info << "before add the source term, the f is " << f_global << "\n" << endl;
-        Info << "before add the source term, the F_memb is " << F_memb << "\n" << endl;
+        // Info << "before add the source term, the f is " << f_global << "\n" << endl;
+        // Info << "before add the source term, the F_memb is " << F_memb << "\n" << endl;
         forAll(centres, cellI)
         {
             if(

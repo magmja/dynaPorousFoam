@@ -1,13 +1,13 @@
 // Solve the Momentum equation
-// const scalar porosity(porousZones.porosity());
+const scalar porosity(porousZones.porosity());
 
 MRF.correctBoundaryVelocity(U);
 
 fvVectorMatrix UEqn
 (
-    fvm::ddt(U)
-  + fvm::div(phi, U)
-  + turbulence->divDevReff(U)
+    1/porosity*fvm::ddt(U)
+  + 1/porosity*fvm::div(phi, U)
+  + 1/porosity*turbulence->divDevReff(U)
 );
 
 UEqn.relax();

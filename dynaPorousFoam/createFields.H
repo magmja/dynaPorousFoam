@@ -63,10 +63,6 @@ IOdictionary netDict
     )
 );
 
-netPanel porousZones(netDict);
-
-Info<< "the porosity of the net is " << porousZones.porosity()<< "\n"<<endl;
-
 IOdictionary structuralPositions
 (
     IOobject
@@ -78,7 +74,6 @@ IOdictionary structuralPositions
         IOobject::NO_WRITE
     )
 );
-porousZones.readPosi(structuralPositions);
 //- the structural elements
 IOdictionary structuralElements
 (
@@ -91,13 +86,51 @@ IOdictionary structuralElements
         IOobject::NO_WRITE
     )
 );
-porousZones.readSur(structuralElements);
+netPanel porousZones(netDict);
+
+Info<< "Porosity of the structure is " << porousZones.porosity()<< "\n"<<endl;
 // constrcut net panel
-Info<< "the structuralPositions_memb of the net is " << porousZones.posi()<< "\n"<<endl;
-Info<< "the structuralElements_memb of the net is " << porousZones.sur()<< "\n"<<endl;
+porousZones.readPosi(structuralPositions);
+porousZones.readSur(structuralElements);
+
+// Foam::fvMesh mesh
+// (
+//     Foam::IOobject
+//     (
+//         Foam::fvMesh::defaultRegion,
+//         runTime.timeName(),
+//         runTime,
+//         IOobject::MUST_READ
+//     )
+// );
+
+// Info<< "Cell sentres  " << "\n"<<mesh.cellCentres() << endl;
+// Info<< "Cell volumes  " << "\n"<<mesh.cellVolumes() << endl;
+
+// volScalarField pp2
+// (
+//     IOobject
+//     (
+//         "pp2",
+//         runTime.timeName(),
+//         mesh,
+//         IOobject::NO_READ,
+//         IOobject::AUTO_WRITE
+//     ),
+//     mesh
+// );
+// Info<< pp2 << endl;
+// Info<< pp2.boundaryField()[0] << endl;
 
 
-Info<< "Before read porosity field " << "\n" << endl;
+// Info<< "Before read porosity field " << "\n" << endl;
+dimensionedScalar poro
+(
+   "poro",
+   dimless,
+   1.0
+);
+
 volScalarField porosityField
 (
     IOobject
@@ -109,12 +142,12 @@ volScalarField porosityField
         IOobject::AUTO_WRITE
     ),
     mesh,
-    1.0
+    poro
 );
-Info<< "After read porosity field " << "\n" << endl;
-// read from outside 
-// need to confirm ... might be wrong data structure
-//- the structural point positions
+
+// Info<< "After read porosity field " << "\n" << endl;
+
+// update the porosity field
 
 porousZones.updatePoroField(porosityField, mesh);
 
