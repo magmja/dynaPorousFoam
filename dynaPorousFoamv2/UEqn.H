@@ -10,7 +10,7 @@ fvVectorMatrix UEqn
 
 UEqn.relax();
 
-porousZones.addResistance(UEqn,nu,mesh);
+Nettings.addResistance(UEqn,nu,mesh);
 
 
 fvOptions.constrain(UEqn);

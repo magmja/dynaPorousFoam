@@ -1,0 +1,4 @@
+SOURCE = \
+dynaPorousNetFoam.C \
+
+# sources

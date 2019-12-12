@@ -93,63 +93,33 @@ Info<< "Porosity of the structure is " << porousZones.porosity()<< "\n"<<endl;
 porousZones.readPosi(structuralPositions);
 porousZones.readSur(structuralElements);
 
-// Foam::fvMesh mesh
+// Info<< "Before read porosity field " << "\n" << endl;
+// dimensionedScalar poro
 // (
-//     Foam::IOobject
-//     (
-//         Foam::fvMesh::defaultRegion,
-//         runTime.timeName(),
-//         runTime,
-//         IOobject::MUST_READ
-//     )
+//    "poro",
+//    dimless,
+//    1.0
 // );
 
-// Info<< "Cell sentres  " << "\n"<<mesh.cellCentres() << endl;
-// Info<< "Cell volumes  " << "\n"<<mesh.cellVolumes() << endl;
-
-// volScalarField pp2
+// volScalarField porosityField
 // (
 //     IOobject
 //     (
-//         "pp2",
+//         "porosityField",
 //         runTime.timeName(),
 //         mesh,
-//         IOobject::NO_READ,
+//         IOobject::READ_IF_PRESENT,
 //         IOobject::AUTO_WRITE
 //     ),
-//     mesh
+//     mesh,
+//     poro
 // );
-// Info<< pp2 << endl;
-// Info<< pp2.boundaryField()[0] << endl;
 
+// // Info<< "After read porosity field " << "\n" << endl;
 
-// Info<< "Before read porosity field " << "\n" << endl;
-dimensionedScalar poro
-(
-   "poro",
-   dimless,
-   1.0
-);
+// // update the porosity field
 
-volScalarField porosityField
-(
-    IOobject
-    (
-        "porosityField",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::AUTO_WRITE
-    ),
-    mesh,
-    poro
-);
+// porousZones.updatePoroField(porosityField, mesh);
 
-// Info<< "After read porosity field " << "\n" << endl;
-
-// update the porosity field
-
-porousZones.updatePoroField(porosityField, mesh);
-
-//- write the porosity field
-porosityField.write();
+// //- write the porosity field
+// porosityField.write();

@@ -77,76 +77,80 @@ Description
 
 int main(int argc, char *argv[])
 {
-    argList::addNote
-    (
+    argList::addNote(
         "Transient solver for incompressible, turbulent flow,"
-        " using the PISO algorithm."
-    );
+        " using the PISO algorithm.");
 
-    #include "postProcess.H"
+#include "postProcess.H"
 
-    #include "addCheckCaseOptions.H"
-    #include "setRootCaseLists.H"
-    #include "createTime.H"
-    #include "createMesh.H"
-    #include "createControl.H"
-    #include "createFields.H"
-    #include "initContinuityErrs.H"
+#include "addCheckCaseOptions.H"
+#include "setRootCaseLists.H"
+#include "createTime.H"
+#include "createMesh.H"
+#include "createControl.H"
+#include "createFields.H"
+#include "initContinuityErrs.H"
 
     turbulence->validate();
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    Info<< "\nStarting time loop\n" << endl;
+    Info << "\nStarting time loop\n"
+         << endl;
 
     while (runTime.loop())
     {
-        Info<< "Time = " << runTime.timeName() << nl << endl;
+        Info << "Time = " << runTime.timeName() << nl << endl;
 
-        #include "CourantNo.H"
+#include "CourantNo.H"
 
         // Pressure-velocity PISO corrector
         {
-            #include "UEqn.H"
+#include "UEqn.H"
 
             // --- PISO loop
             while (piso.correct())
             {
-                #include "pEqn.H"
+#include "pEqn.H"
             }
         }
 
         laminarTransport.correct();
         turbulence->correct();
 
-        // read from outside 
+        // read from outside
         // need to confirm ... might be wrong data structure
-        IOdictionary structuralPositions
-        (
-            IOobject
-            (
+        IOdictionary structuralPositions(
+            IOobject(
                 "posi",
                 runTime.constant(),
                 mesh,
                 IOobject::MUST_READ,
-                IOobject::NO_WRITE
-            )
-        );
+                IOobject::NO_WRITE));
 
-        porousZones.readPosi(structuralPositions);
-        // porousZones.updatePoroField(porosityField, mesh);
+        Nettings.readPosi(structuralPositions);
         
-        
+        IOdictionary structuralFh(
+            IOobject(
+                "Fh",
+                runTime.constant(),
+                mesh,
+                IOobject::MUST_READ,
+                IOobject::NO_WRITE));
+
+        Nettings.readForce(structuralFh);
+        Nettings.updatePoroField(porosityField, mesh);
+
         runTime.write();
-        Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
-        << "  ClockTime = " << runTime.elapsedClockTime() << " s"
-        << nl << endl;
+        Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
+             << nl << endl;
     }
 
-    Info<< "End\n" << endl;
+    Info << "End\n"
+         << endl;
 
     return 0;
 }
-
 
 // ************************************************************************* //
