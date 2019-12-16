@@ -140,7 +140,9 @@ int main(int argc, char *argv[])
 
         Nettings.readForce(structuralFh);
         Nettings.updatePoroField(porosityField, mesh);
-
+        
+        // write the Nettings.fluidVelocity(); to a extrinal files
+        
         runTime.write();
         Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
              << "  ClockTime = " << runTime.elapsedClockTime() << " s"

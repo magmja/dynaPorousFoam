@@ -29,7 +29,6 @@ Foam::scalar Foam::netPanel::calcArea(
     return panelarea;
 }
 
-
 bool Foam::netPanel::isInPorousZone(
     const point x,
     const List<vector> &structuralPositions_memb,
@@ -44,7 +43,7 @@ bool Foam::netPanel::isInPorousZone(
     scalar panelarea = calcArea(pointI, pointII, pointIII);
     scalar dis(mag((x - pointI) & panelNorm));
     // define a const scalar as the distance between point x to net panel
-    if (dis <= thickness_memb/2) // distance is less than half thickness
+    if (dis <= thickness_memb / 2) // distance is less than half thickness
     {
         vector projectedPoint(0, 0, 0);       // initial the projected point is 0,0,0
         if (((x - pointI) & panelNorm) < 0.0) // on the side of normal vector
@@ -136,11 +135,9 @@ void Foam::netPanel::addResistance(
             if (
                 isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                Usource[cellI] -= V[cellI]/volumeE*sourceforce;
+                Usource[cellI] -= V[cellI] / volumeE * sourceforce;
             }
-
         }
-
     }
 }
 
@@ -159,13 +156,19 @@ void Foam::netPanel::updatePoroField(
     forAll(structuralElements_memb, Elementi)
     {
         // loop through all the cell,
+        vector fluidVelocityonElement(vector::zero);
+        scalar num_fvmesh(0);
         forAll(centres, cellI)
         {
             if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
                 porosityField[cellI] = Sn_memb;
+                num_fvmesh += 1;
+                // sum the velocity in each cell;
             }
         }
+        fluidVelocityonElement=fluidVelocityonElement/num_fvmesh;
+        fluidVelocity_memb[Elementi]=fluidVelocityonElement;
     }
 }
 

@@ -5,6 +5,7 @@
         "dynaPorousNetFoam.C": "cpp",
         "sstream": "cpp",
         "complex": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "vector": "cpp"
     }
 }

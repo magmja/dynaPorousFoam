@@ -51,6 +51,7 @@ protected:
     List<vector>        structuralPositions_memb; // positions of each noeds
     List<vector>        structuralElements_memb;
     List<vector>        structuralForces_memb;
+    List<vector>        fluidVelocity_memb;
 
     //-Private member function
     vector calcNorm(
@@ -93,10 +94,16 @@ public:
     {
         return structuralPositions_memb;
     };
+
     List<vector> surf() const
     {
         return structuralElements_memb;
     };
+    List<vector> fluidVelocity() const
+    {
+        return fluidVelocity_memb;
+    };
+
 
     void readPosi(const dictionary &structuralPositions);
     void readSurf(const dictionary &structuralElements);
