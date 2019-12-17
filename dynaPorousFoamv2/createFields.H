@@ -99,7 +99,7 @@ volScalarField porosityField(
     poro);
 
 // update the porosity field
-Nettings.updatePoroField(porosityField, mesh);
+Nettings.updatePoroField(porosityField, mesh,U);
 //- write the porosity field
 porosityField.write();
 //

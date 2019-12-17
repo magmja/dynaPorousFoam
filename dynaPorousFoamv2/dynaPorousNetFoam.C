@@ -73,6 +73,7 @@ Description
 #include "pisoControl.H"
 #include "fvOptions.H"
 #include "netPanel.H"
+#include "OFstream.H"
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -97,7 +98,8 @@ int main(int argc, char *argv[])
 
     Info << "\nStarting time loop\n"
          << endl;
-
+    fileName output("velocityOnElements.dat");
+    OFstream os(output);
     while (runTime.loop())
     {
         Info << "Time = " << runTime.timeName() << nl << endl;
@@ -139,10 +141,10 @@ int main(int argc, char *argv[])
                 IOobject::NO_WRITE));
 
         Nettings.readForce(structuralFh);
-        Nettings.updatePoroField(porosityField, mesh);
-        
+        Nettings.updatePoroField(porosityField, mesh,U);
+        os << Nettings.fluidVelocity() << endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
-        
+
         runTime.write();
         Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
              << "  ClockTime = " << runTime.elapsedClockTime() << " s"

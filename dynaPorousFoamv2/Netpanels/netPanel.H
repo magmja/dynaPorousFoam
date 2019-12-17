@@ -45,13 +45,13 @@ class netPanel
 {
 protected:
     //- Private data
-    const dictionary    netDict_memb;
-    const scalar        thickness_memb; // thickness of the net panel
-    const scalar        Sn_memb;
-    List<vector>        structuralPositions_memb; // positions of each noeds
-    List<vector>        structuralElements_memb;
-    List<vector>        structuralForces_memb;
-    List<vector>        fluidVelocity_memb;
+    const dictionary netDict_memb;
+    const scalar thickness_memb; // thickness of the net panel
+    const scalar Sn_memb;
+    List<vector> structuralPositions_memb; // positions of each noeds
+    List<vector> structuralElements_memb;
+    List<vector> structuralForces_memb;
+    List<vector> fluidVelocity_memb;
 
     //-Private member function
     vector calcNorm(
@@ -61,11 +61,11 @@ protected:
     scalar calcArea(
         const point &pointI,
         const point &pointII,
-        const point &pointIII)const;
+        const point &pointIII) const;
     bool isInPorousZone(
-        const point          x,
-        const List<vector>  &structuralPositions,
-        const vector        &structuralElementi) const;
+        const point x,
+        const List<vector> &structuralPositions,
+        const vector &structuralElementi) const;
 
 public:
     // Constructors
@@ -83,8 +83,9 @@ public:
 
     void updatePoroField(
         volScalarField &porosityField,
-        fvMesh &mesh) const;
-        
+        fvMesh &mesh,
+        const volVectorField &U);
+
     scalar Sn() const
     {
         return Sn_memb;
@@ -103,7 +104,6 @@ public:
     {
         return fluidVelocity_memb;
     };
-
 
     void readPosi(const dictionary &structuralPositions);
     void readSurf(const dictionary &structuralElements);

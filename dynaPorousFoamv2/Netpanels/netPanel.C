@@ -143,7 +143,8 @@ void Foam::netPanel::addResistance(
 
 void Foam::netPanel::updatePoroField(
     volScalarField &porosityField,
-    fvMesh &mesh) const
+    fvMesh &mesh,
+    const volVectorField &U)
 {
     // step1 set all the cell as 1
     forAll(mesh.C(), cellI)
@@ -164,11 +165,12 @@ void Foam::netPanel::updatePoroField(
             {
                 porosityField[cellI] = Sn_memb;
                 num_fvmesh += 1;
+                fluidVelocityonElement += U[cellI];
                 // sum the velocity in each cell;
             }
         }
-        fluidVelocityonElement=fluidVelocityonElement/num_fvmesh;
-        fluidVelocity_memb[Elementi]=fluidVelocityonElement;
+        fluidVelocityonElement = fluidVelocityonElement / num_fvmesh;
+        fluidVelocity_memb[Elementi] = fluidVelocityonElement;
     }
 }
 
