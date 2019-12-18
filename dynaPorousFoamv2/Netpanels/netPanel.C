@@ -143,8 +143,7 @@ void Foam::netPanel::addResistance(
 
 void Foam::netPanel::updatePoroField(
     volScalarField &porosityField,
-    fvMesh &mesh,
-    const volVectorField &U)
+    const fvMesh &mesh) const
 {
     // step1 set all the cell as 1
     forAll(mesh.C(), cellI)
@@ -153,25 +152,42 @@ void Foam::netPanel::updatePoroField(
     }
     // get the center of all the cells
     const vectorField &centres(mesh.C());
-    // loop through all the structural emlements
-    forAll(structuralElements_memb, Elementi)
+    forAll(structuralElements_memb, Elementi) // loop through all the structural emlements
     {
-        // loop through all the cell,
-        vector fluidVelocityonElement(vector::zero);
-        scalar num_fvmesh(0);
-        forAll(centres, cellI)
+        forAll(centres, cellI) // loop through all the cell,
         {
             if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
                 porosityField[cellI] = Sn_memb;
+            }
+        }
+    }
+}
+
+void Foam::netPanel::updateVelocity(
+    const fvMesh &mesh,
+    const volVectorField &U)
+{
+    List<vector> fluidVelocity(structuralElements_memb.size(), vector::zero);
+    // get the center of all the cells
+    const vectorField &centres(mesh.C());
+    forAll(structuralElements_memb, Elementi) // loop through all the structural emlements
+    {
+
+        vector fluidVelocityonElement(vector::zero);
+        scalar num_fvmesh(0);
+        forAll(centres, cellI) // loop through all the cell,
+        {
+            if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
+            {
                 num_fvmesh += 1;
                 fluidVelocityonElement += U[cellI];
                 // sum the velocity in each cell;
             }
         }
-        fluidVelocityonElement = fluidVelocityonElement / num_fvmesh;
-        fluidVelocity_memb[Elementi] = fluidVelocityonElement;
+        fluidVelocity[Elementi] = fluidVelocityonElement / (SMALL+num_fvmesh);
     }
+    fluidVelocity_memb = fluidVelocity;
 }
 
 // * * * * * * * * * * * * * * Communication Functions  * * * * * * * * * * * * * * //

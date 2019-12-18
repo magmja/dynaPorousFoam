@@ -104,16 +104,15 @@ int main(int argc, char *argv[])
     {
         Info << "Time = " << runTime.timeName() << nl << endl;
 
-#include "CourantNo.H"
+            #include "CourantNo.H"
 
         // Pressure-velocity PISO corrector
         {
-#include "UEqn.H"
-
+            #include "UEqn.H"
             // --- PISO loop
             while (piso.correct())
             {
-#include "pEqn.H"
+                 #include "pEqn.H"
             }
         }
 
@@ -131,7 +130,7 @@ int main(int argc, char *argv[])
                 IOobject::NO_WRITE));
 
         Nettings.readPosi(structuralPositions);
-        
+
         IOdictionary structuralFh(
             IOobject(
                 "Fh",
@@ -141,8 +140,10 @@ int main(int argc, char *argv[])
                 IOobject::NO_WRITE));
 
         Nettings.readForce(structuralFh);
-        Nettings.updatePoroField(porosityField, mesh,U);
-        os << Nettings.fluidVelocity() << endl;
+        
+        Nettings.updatePoroField(porosityField, mesh);
+        Nettings.updateVelocity(mesh,U);
+        os << Nettings.FluidU() << endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
 
         runTime.write();

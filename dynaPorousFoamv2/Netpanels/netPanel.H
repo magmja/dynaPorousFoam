@@ -83,8 +83,13 @@ public:
 
     void updatePoroField(
         volScalarField &porosityField,
-        fvMesh &mesh,
+        const fvMesh &mesh) const;
+
+    void updateVelocity(
+        const fvMesh &mesh,
         const volVectorField &U);
+
+
 
     scalar Sn() const
     {
@@ -100,9 +105,13 @@ public:
     {
         return structuralElements_memb;
     };
-    List<vector> fluidVelocity() const
+    List<vector> FluidU() const
     {
         return fluidVelocity_memb;
+    };
+    List<vector> Fhout() const
+    {
+        return structuralForces_memb;
     };
 
     void readPosi(const dictionary &structuralPositions);

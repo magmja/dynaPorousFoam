@@ -97,9 +97,12 @@ volScalarField porosityField(
         IOobject::AUTO_WRITE),
     mesh,
     poro);
+Info << "Before updateporofield, the positions are "<<Nettings.posi()<<endl;
+Info << "Before updateporofield, the surfaces are"<<Nettings.surf()<<endl;
 
 // update the porosity field
-Nettings.updatePoroField(porosityField, mesh,U);
+Nettings.updatePoroField(porosityField, mesh);
 //- write the porosity field
+Info << "After updateporofield fluid velocity are"<<Nettings.FluidU()<<endl;
 porosityField.write();
 //
