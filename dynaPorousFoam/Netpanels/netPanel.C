@@ -209,7 +209,7 @@ void Foam::netPanel::addResistance(
                 point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
                 vector eL(calcLifti(p0, p1, p2, U[cellI]));
                 scalar theta(calcTheta(p0, p1, p2, U[cellI]));
-                vector Fd = 0.5 * F_memb.value()[0] * cos(theta) * mag(U[cellI]) * (U[cellI]) + 0.04 * 0.5 * mag(U[cellI]) * (U[cellI]); //* area
+                vector Fd = 0.5 * (0.04+F_memb.value()[0] * cos(theta)) * mag(U[cellI]) * (U[cellI]); //* area
                 vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL;                               //* area
                 // tensor dragCoeff = nu[cellI] * d_global + 0.5 * mag(U[cellI]) * f_global;
                 // Usource[cellI] -= V[cellI] * dragCoeff & (U[cellI]);
