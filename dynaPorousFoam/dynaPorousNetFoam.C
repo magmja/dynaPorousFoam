@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
                 "posi",
                 runTime.constant(),
                 mesh,
-                IOobject::MUST_READ,
+                IOobject::READ_IF_PRESENT,
                 IOobject::NO_WRITE
             )
         );

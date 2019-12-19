@@ -70,7 +70,7 @@ IOdictionary structuralPositions
         "posi",
         runTime.constant(),
         mesh,
-        IOobject::MUST_READ,
+        IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     )
 );
@@ -82,7 +82,7 @@ IOdictionary structuralElements
         "surf",
         runTime.constant(),
         mesh,
-        IOobject::MUST_READ,
+        IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     )
 );
