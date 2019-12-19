@@ -101,7 +101,7 @@ bool Foam::netPanel::isInPorousZone(
     const point pointI = structuralPositions_memb[structuralElementi[0]];
     const point pointII = structuralPositions_memb[structuralElementi[1]];
     const point pointIII = structuralPositions_memb[structuralElementi[2]];
-    vector panelNorm = calcNorm(pointI, pointII, pointIII);
+    vector panelNorm = calcNorm2(pointI, pointII, pointIII);
     scalar dis(mag((x - pointI) & panelNorm));
     // define a const scalar as the distance between point x to net panel
     if (dis <= thickness_memb) // distance is less than half thickness
@@ -131,16 +131,58 @@ bool Foam::netPanel::isInPorousZone(
 
     return result;
 }
-
-Foam::vector Foam::netPanel::calcNorm(
+Foam::vector Foam::netPanel::calcNorm2(
     const point &pointI,
     const point &pointII,
     const point &pointIII) const
 {
     const vector a(pointI - pointII);
     const vector b(pointI - pointIII);
-    const vector norm(a ^ b / (mag(a ^ b) + SMALL));
+    return (a ^ b / (mag(a ^ b) + SMALL));
+}
+Foam::vector Foam::netPanel::calcNorm(
+    const point &pointI,
+    const point &pointII,
+    const point &pointIII,
+    const vector &fluidVelocity) const
+{
+    const vector a(pointI - pointII);
+    const vector b(pointI - pointIII);
+    vector norm(a ^ b / (mag(a ^ b) + SMALL));
+    if ((norm & fluidVelocity) < 0) // assume the velocity is x+
+    {
+        norm = -norm;
+    }
     return norm; // can point out or in the panel.
+}
+
+Foam::vector Foam::netPanel::calcLifti(
+    const point &pointI,
+    const point &pointII,
+    const point &pointIII,
+    const vector &fluidVelocity) const
+{
+    const vector eN(calcNorm(pointI, pointII, pointIII,fluidVelocity));
+    return (fluidVelocity ^ eN ^ fluidVelocity) / (mag(fluidVelocity ^ eN ^ fluidVelocity) + SMALL);
+}
+
+Foam::scalar Foam::netPanel::calcTheta(
+    const point &pointI,
+    const point &pointII,
+    const point &pointIII,
+    const vector &fluidVelocity) const
+{
+    const vector eN(calcNorm(pointI, pointII, pointIII,fluidVelocity));
+    return acos(mag(eN & fluidVelocity) / (SMALL + mag(fluidVelocity)));
+}
+Foam::scalar Foam::netPanel::calcArea(
+    const point &pointI,
+    const point &pointII,
+    const point &pointIII) const
+{
+    const vector a(pointI - pointII);
+    const vector b(pointI - pointIII);
+    return 0.5 * mag(a ^ b);
 }
 
 void Foam::netPanel::addResistance(
@@ -149,15 +191,12 @@ void Foam::netPanel::addResistance(
     const fvMesh &mesh) const
 {
     const vectorField &centres(mesh.C());
+    const scalarField V = mesh.V(); // volume of cells
+    vectorField &Usource = UEqn.source();
+    const vectorField &U = UEqn.psi(); // get the velocity field
+
     forAll(structuralElements_memb, Elementi)
     {
-        tensor d_global(tensor::zero);
-        tensor f_global(tensor::zero);
-        transformCoeffs(D_memb, d_global, structuralPositions_memb, structuralElements_memb[Elementi]);
-        transformCoeffs(F_memb, f_global, structuralPositions_memb, structuralElements_memb[Elementi]);
-        const scalarField V = mesh.V();
-        vectorField &Usource = UEqn.source();
-        const vectorField &U = UEqn.psi();  // get the velocity field
         // Info << "before add the source term, the f is " << f_global << "\n" << endl;
         // Info << "before add the source term, the F_memb is " << F_memb << "\n" << endl;
         forAll(centres, cellI)
@@ -165,10 +204,16 @@ void Foam::netPanel::addResistance(
             if (
                 isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                
-                // UEqn[cellI] *= 1.0 / porosity_memb;
-                tensor dragCoeff = nu[cellI] * d_global + 0.5 * mag(U[cellI]) * f_global;
-                Usource[cellI] -= V[cellI] * dragCoeff & (U[cellI]);
+                point p0(structuralPositions_memb[structuralElements_memb[Elementi][0]]);
+                point p1(structuralPositions_memb[structuralElements_memb[Elementi][1]]);
+                point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
+                vector eL(calcLifti(p0, p1, p2, U[cellI]));
+                scalar theta(calcTheta(p0, p1, p2, U[cellI]));
+                vector Fd = 0.5 * F_memb.value()[0] * cos(theta) * mag(U[cellI]) * (U[cellI]);
+                vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL;
+                // tensor dragCoeff = nu[cellI] * d_global + 0.5 * mag(U[cellI]) * f_global;
+                // Usource[cellI] -= V[cellI] * dragCoeff & (U[cellI]);
+                Usource[cellI] -= (Fd + Fl) / (thickness_memb / (SMALL + V[cellI]));
             }
         }
     }
@@ -193,7 +238,7 @@ void Foam::netPanel::updatePoroField(
         {
             if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                porosityField[cellI] = porosity_memb;
+                porosityField[cellI] = Sn_memb;
             }
         }
     }
@@ -232,11 +277,10 @@ Foam::netPanel::netPanel(
     const dictionary &netDict)
     : // initial components
       netDict_memb(netDict),
-      porousPropertiesDict_memb(netDict_memb.subDict("porousProperties")),
-      porosity_memb(readScalar(porousPropertiesDict_memb.lookup("porosity"))),
-      thickness_memb(readScalar(porousPropertiesDict_memb.lookup("halfthickness"))),
-      D_memb(porousPropertiesDict_memb.lookup("D")),
-      F_memb(porousPropertiesDict_memb.lookup("F"))
+      Sn_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("Sn"))),
+      thickness_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("halfthickness"))),
+      D_memb(netDict_memb.subDict("porousProperties").lookup("D")),
+      F_memb(netDict_memb.subDict("porousProperties").lookup("F"))
 {
     // creat the netpanel object
 }

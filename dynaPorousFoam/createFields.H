@@ -88,38 +88,34 @@ IOdictionary structuralElements
 );
 netPanel porousZones(netDict);
 
-Info<< "Porosity of the structure is " << porousZones.porosity()<< "\n"<<endl;
 // constrcut net panel
 porousZones.readPosi(structuralPositions);
 porousZones.readSur(structuralElements);
 
-// Info<< "Before read porosity field " << "\n" << endl;
-// dimensionedScalar poro
-// (
-//    "poro",
-//    dimless,
-//    1.0
-// );
+Info<< "Before read porosity field " << "\n" << endl;
 
-// volScalarField porosityField
-// (
-//     IOobject
-//     (
-//         "porosityField",
-//         runTime.timeName(),
-//         mesh,
-//         IOobject::READ_IF_PRESENT,
-//         IOobject::AUTO_WRITE
-//     ),
-//     mesh,
-//     poro
-// );
 
-// // Info<< "After read porosity field " << "\n" << endl;
+dimensionedScalar poro(
+    "poro",
+    dimless,
+    1.0);
 
-// // update the porosity field
+volScalarField porosityField(
+    IOobject(
+        "porosityField",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE),
+    mesh,
+    poro);
+Info<< "After read porosity field " << porousZones.posi()<<"\n" << endl;
+Info<< "After read porosity field " << porousZones.sur()<<"\n" << endl;
+Info<< "After read porosity field " << porousZones.porosity()<<"\n" << endl;
+Info<< "After read porosity field " << porousZones.F()<<"\n" << endl;
+// update the porosity field
 
-// porousZones.updatePoroField(porosityField, mesh);
+porousZones.updatePoroField(porosityField, mesh);
 
-// //- write the porosity field
-// porosityField.write();
+//- write the porosity field
+porosityField.write();

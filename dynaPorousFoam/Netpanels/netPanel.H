@@ -46,15 +46,44 @@ class netPanel
 protected:
     //- Private data
         const dictionary             netDict_memb;
-        const dictionary             porousPropertiesDict_memb;
         const scalar                 thickness_memb;  // thickness of the net panel
-        const scalar                 porosity_memb;
+        const scalar                 Sn_memb;
         const dimensionedVector      D_memb;  //- porous resistance coefficient F
         const dimensionedVector      F_memb;  // private Member fucntion
               List<vector>           structuralPositions_memb;
               List<vector>           structuralElements_memb;
     //-Private member function    
         vector calcNorm
+        (    
+            const point& pointI,
+            const point& pointII,
+            const point& pointIII,
+            const vector& fluidVelocity
+        )const;
+        vector calcNorm2
+        (    
+            const point& pointI,
+            const point& pointII,
+            const point& pointIII
+        )const;
+
+        vector calcLifti
+        (    
+            const point& pointI,
+            const point& pointII,
+            const point& pointIII,
+            const vector& fluidVelocity
+        )const;   
+
+        scalar calcTheta
+        (    
+            const point& pointI,
+            const point& pointII,
+            const point& pointIII,
+            const vector& fluidVelocity
+        )const;   
+
+        scalar calcArea
         (    
             const point& pointI,
             const point& pointII,
@@ -101,7 +130,7 @@ public:
          )const;
     scalar porosity() const
         {
-            return porosity_memb;
+            return Sn_memb;
         };
 
     List<vector>  posi() const
@@ -113,7 +142,11 @@ public:
             return structuralElements_memb;
         };
 
-
+    dimensionedVector  F() const
+        {
+            return F_memb;
+        };
+    
     void readPosi(
             const dictionary&        structuralPositions
     );

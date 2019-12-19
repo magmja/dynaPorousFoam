@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
         );
 
         porousZones.readPosi(structuralPositions);
-        // porousZones.updatePoroField(porosityField, mesh);
+        porousZones.updatePoroField(porosityField, mesh);
         
         
         runTime.write();
