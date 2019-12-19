@@ -79,7 +79,7 @@ IOdictionary structuralElements
 (
     IOobject
     (
-        "surc",
+        "surf",
         runTime.constant(),
         mesh,
         IOobject::MUST_READ,

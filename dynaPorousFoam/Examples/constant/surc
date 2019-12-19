@@ -8,11 +8,11 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      surc;
+    object      surf;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 {
-numOfSurc   160 ;
+numOfSurf   160 ;
 e0 ( 0	1	20 );
 e80 ( 1	21	20 );
 e1 ( 20	21	40 );

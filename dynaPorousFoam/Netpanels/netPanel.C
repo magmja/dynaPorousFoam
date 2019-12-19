@@ -259,7 +259,7 @@ void Foam::netPanel::readPosi(
 void Foam::netPanel::readSur(
     const dictionary &structuralElements)
 {
-    scalar listLength(readScalar(structuralElements.lookup("numOfSurc")));
+    scalar listLength(readScalar(structuralElements.lookup("numOfSurf")));
     List<vector> sur(listLength, vector::zero);
     forAll(sur, i)
     {
