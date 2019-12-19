@@ -106,10 +106,7 @@ bool Foam::netPanel::isInPorousZone(
     // define a const scalar as the distance between point x to net panel
     if (dis <= thickness_memb) // distance is less than half thickness
     {
-        scalar panelarea // the area of the triangular net panel
-            (
-                0.5 * mag(
-                          (pointI - pointII) ^ (pointI - pointIII)));
+        scalar panelarea(calcArea(pointI, pointII, pointIII));
         vector projectedPoint(0, 0, 0);       // initial the projected point is 0,0,0
         if (((x - pointI) & panelNorm) < 0.0) // on the side of normal vector
         {
@@ -120,9 +117,7 @@ bool Foam::netPanel::isInPorousZone(
             projectedPoint = (x - panelNorm * dis);
         }
         // projectedP is the projected point on the net panel
-        scalar panelarea3(0.5 * (mag((projectedPoint - pointI) ^ (projectedPoint - pointII)) +
-                                 mag((projectedPoint - pointI) ^ (projectedPoint - pointIII)) +
-                                 mag((projectedPoint - pointII) ^ (projectedPoint - pointIII)))); //  the area of the three trigular shapes.
+        scalar panelarea3(calcArea(projectedPoint, pointI, pointII) + calcArea(projectedPoint, pointI, pointIII) + calcArea(projectedPoint, pointIII, pointII)); //  the area of the three trigular shapes.
         if (panelarea3 <= SMALL + panelarea)
         {
             result = true;
@@ -209,11 +204,23 @@ void Foam::netPanel::addResistance(
                 point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
                 vector eL(calcLifti(p0, p1, p2, U[cellI]));
                 scalar theta(calcTheta(p0, p1, p2, U[cellI]));
+                // scalar area(calcArea(p0, p1, p2));
                 vector Fd = 0.5 * (0.04 + F_memb.value()[0] * cos(theta)) * mag(U[cellI]) * (U[cellI]);    //* area
                 vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL; //* area
-                // tensor dragCoeff = nu[cellI] * d_global + 0.5 * mag(U[cellI]) * f_global;
-                // Usource[cellI] -= V[cellI] * dragCoeff & (U[cellI]);
-                Usource[cellI] -= (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])); //* area
+
+                // Info << "before add the source term, the cd is " << F_memb.value()[0] << "\n" << endl;
+                // Info << "before add the source term, the cl is " << F_memb.value()[1] << "\n" << endl;
+                // Info << "before add the source term, the eL is " << eL << "\n" << endl;
+                // Info << "before add the source term, the U is " << U[cellI] << "\n" << endl;
+                // Info << "before add the source term, the theta is " << theta << "\n" << endl;
+                // Info << "before add the source term, the fd is " << Fd << "\n" << endl;
+                // Info << "before add the source term, the fd is " << Fl << "\n" << endl;
+                // Info << "before add the source term, the source term is  " << (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])) << "\n" << endl;
+                // Info << "before add the source term, the area is " << area << "\n" << endl;
+                // Info << "before add the source term, the thickness_memb is " << thickness_memb << "\n" << endl;
+                // Info << "before add the source term, the volume of FV is " << V[cellI] << "\n" << endl;
+
+                Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.6); //0.6 is safe factor
             }
         }
     }
