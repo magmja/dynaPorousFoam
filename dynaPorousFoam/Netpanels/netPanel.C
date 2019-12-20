@@ -212,17 +212,17 @@ void Foam::netPanel::addResistance(
                 vector Fd = 0.5 * (0.04 + F_memb.value()[0] * cos(theta)) * mag(U[cellI]) * (U[cellI]);    //* area
                 vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL; //* area
 
-                Info << "before add the source term, the cd is " << F_memb.value()[0] << "\n" << endl;
-                Info << "before add the source term, the cl is " << F_memb.value()[1] << "\n" << endl;
-                Info << "before add the source term, the eL is " << eL << "\n" << endl;
-                Info << "before add the source term, the U is " << U[cellI] << "\n" << endl;
-                Info << "before add the source term, the theta is " << theta << "\n" << endl;
-                Info << "before add the source term, the fd is " << Fd << "\n" << endl;
-                Info << "before add the source term, the fd is " << Fl << "\n" << endl;
-                Info << "before add the source term, the source term is  " << (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])) << "\n" << endl;
-                Info << "before add the source term, the area is " << area << "\n" << endl;
-                Info << "before add the source term, the thickness_memb is " << thickness_memb << "\n" << endl;
-                Info << "before add the source term, the volume of FV is " << V[cellI] << "\n" << endl;
+                // Info << "before add the source term, the cd is " << F_memb.value()[0] << "\n" << endl;
+                // Info << "before add the source term, the cl is " << F_memb.value()[1] << "\n" << endl;
+                // Info << "before add the source term, the eL is " << eL << "\n" << endl;
+                // Info << "before add the source term, the U is " << U[cellI] << "\n" << endl;
+                // Info << "before add the source term, the theta is " << theta << "\n" << endl;
+                // Info << "before add the source term, the fd is " << Fd << "\n" << endl;
+                // Info << "before add the source term, the fd is " << Fl << "\n" << endl;
+                // Info << "before add the source term, the source term is  " << (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])) << "\n" << endl;
+                // Info << "before add the source term, the area is " << area << "\n" << endl;
+                // Info << "before add the source term, the thickness_memb is " << thickness_memb << "\n" << endl;
+                // Info << "before add the source term, the volume of FV is " << V[cellI] << "\n" << endl;
                 resistance_total+=(Fd + Fl) * V[cellI] / (thickness_memb * 0.6);
                 Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.6); //0.6 is safe factor
             }
