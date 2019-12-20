@@ -187,7 +187,6 @@ Foam::scalar Foam::netPanel::calcArea(
 
 void Foam::netPanel::addResistance(
     fvVectorMatrix &UEqn,
-    const volScalarField &nu,
     const fvMesh &mesh) const
 {
     const vectorField &centres(mesh.C());
@@ -213,7 +212,7 @@ void Foam::netPanel::addResistance(
                 vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL; //* area
                 // tensor dragCoeff = nu[cellI] * d_global + 0.5 * mag(U[cellI]) * f_global;
                 // Usource[cellI] -= V[cellI] * dragCoeff & (U[cellI]);
-                Usource[cellI] -= (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])); //* area
+                Usource[cellI] -= (Fd + Fl) / thickness_memb * (SMALL + V[cellI]); //* area
             }
         }
     }

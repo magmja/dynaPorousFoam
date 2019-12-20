@@ -35,6 +35,8 @@ autoPtr<incompressible::turbulenceModel> turbulence(
 #include "createMRF.H"
 #include "createFvOptions.H"
 
+
+
 volScalarField nu(laminarTransport.nu());
 
 Info << "Before read netdict "
@@ -49,11 +51,15 @@ IOdictionary netDict(
         mesh,
         IOobject::MUST_READ,
         IOobject::NO_WRITE));
-netPanel porousZones(netDict);
+netPanel porousZones0(netDict);
+netPanel porousZones1(netDict);
+netPanel porousZones2(netDict);
 
+
+// >>>>>>>>>>>>>>>cage0>>>>>>>>>>>>>>>>>>
 IOdictionary structuralPositions(
     IOobject(
-        "posi",
+        "posi0",
         runTime.constant(),
         mesh,
         IOobject::MUST_READ,
@@ -61,19 +67,11 @@ IOdictionary structuralPositions(
 //- the structural elements
 IOdictionary structuralElements(
     IOobject(
-        "surf",
+        "surf0",
         runTime.constant(),
         mesh,
         IOobject::MUST_READ,
         IOobject::NO_WRITE));
-
-// constrcut net panel
-porousZones.readPosi(structuralPositions);
-porousZones.readSur(structuralElements);
-
-Info << "Before read porosity field "
-     << "\n"
-     << endl;
 
 dimensionedScalar poro(
     "poro",
@@ -82,25 +80,91 @@ dimensionedScalar poro(
 
 volScalarField porosityField(
     IOobject(
-        "porosityField",
+        "porosityField0",
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE),
     mesh,
     poro);
-// Print information to pring and dubug
-// Info << "After read porosity field " << porousZones.posi() << "\n"
-//      << endl;
-// Info << "After read porosity field " << porousZones.sur() << "\n"
-//      << endl;
-// Info << "After read porosity field " << porousZones.porosity() << "\n"
-//      << endl;
-// Info << "After read porosity field " << porousZones.F() << "\n"
-//      << endl;
-// // update the porosity field
 
-porousZones.updatePoroField(porosityField, mesh);
+porousZones0.readPosi(structuralPositions);
+porousZones0.readSur(structuralElements);
+porousZones0.updatePoroField(porosityField, mesh);
+
+// >>>>>>>>>>>>>>> cage1 >>>>>>>>>>>>>>>>>>
+IOdictionary structuralPositions(
+    IOobject(
+        "posi1",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE));
+//- the structural elements
+IOdictionary structuralElements(
+    IOobject(
+        "surf1",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE));
+
+dimensionedScalar poro(
+    "poro",
+    dimless,
+    1.0);
+
+volScalarField porosityField(
+    IOobject(
+        "porosityField1",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE),
+    mesh,
+    poro);
+porousZones1.readPosi(structuralPositions);
+porousZones1.readSur(structuralElements);
+porousZones1.updatePoroField(porosityField, mesh);
+
+
+
+
+// >>>>>>>>>>>>>>> cage2 >>>>>>>>>>>>>>>>>>
+IOdictionary structuralPositions(
+    IOobject(
+        "posi2",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE));
+//- the structural elements
+IOdictionary structuralElements(
+    IOobject(
+        "surf2",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE));
+
+dimensionedScalar poro(
+    "poro",
+    dimless,
+    1.0);
+
+volScalarField porosityField(
+    IOobject(
+        "porosityField2",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE),
+    mesh,
+    poro);
+
+porousZones2.readPosi(structuralPositions);
+porousZones2.readSur(structuralElements);
+porousZones2.updatePoroField(porosityField, mesh);
 
 //- write the porosity field
 porosityField.write();

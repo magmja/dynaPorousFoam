@@ -119,7 +119,6 @@ public:
     void addResistance
         (
             fvVectorMatrix&         UEqn,
-            const volScalarField&   nu,
             const fvMesh&           mesh
         )const;
 
