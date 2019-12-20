@@ -92,16 +92,16 @@ void Foam::netPanel::transformCoeffs(
 }
 
 bool Foam::netPanel::isInPorousZone(
-    const point x,
-    const List<vector> &structuralPositions_memb,
-    const vector &structuralElementi) const
+    const point&            x,
+    const List<vector>&     structuralPositions_memb,
+    const vector&           structuralElementi) const
 {
     bool result(false); // initial value
 
     const point pointI = structuralPositions_memb[structuralElementi[0]];
     const point pointII = structuralPositions_memb[structuralElementi[1]];
     const point pointIII = structuralPositions_memb[structuralElementi[2]];
-    vector panelNorm = calcNorm2(pointI, pointII, pointIII);
+    vector panelNorm = calcNorm2(pointI, pointII, pointIII);  // a unit vector to indicate the normal 
     scalar dis(mag((x - pointI) & panelNorm));
     // define a const scalar as the distance between point x to net panel
     if (dis <= thickness_memb) // distance is less than half thickness
@@ -116,9 +116,12 @@ bool Foam::netPanel::isInPorousZone(
         {
             projectedPoint = (x - panelNorm * dis);
         }
-        // projectedP is the projected point on the net panel
-        scalar panelarea3(calcArea(projectedPoint, pointI, pointII) + calcArea(projectedPoint, pointI, pointIII) + calcArea(projectedPoint, pointIII, pointII)); //  the area of the three trigular shapes.
-        if (panelarea3 <= SMALL + panelarea)
+        // projectedPiont is the projected point on the net panel
+        scalar panelarea3(calcArea(pointI, pointII, projectedPoint) +
+                          calcArea(pointI, projectedPoint, pointIII) + 
+                          calcArea(projectedPoint, pointII, pointIII)
+                         ); //  the area of the three trigular shapes.
+        if (panelarea3 <= SMALL + panelarea*1.03)// safe factor
         {
             result = true;
         }
@@ -168,7 +171,7 @@ Foam::scalar Foam::netPanel::calcTheta(
     const vector &fluidVelocity) const
 {
     const vector eN(calcNorm(pointI, pointII, pointIII, fluidVelocity));
-    return acos(mag(eN & fluidVelocity) / (SMALL + mag(fluidVelocity)));
+    return acos((eN & fluidVelocity) / (SMALL + mag(fluidVelocity)));
 }
 Foam::scalar Foam::netPanel::calcArea(
     const point &pointI,
@@ -189,41 +192,43 @@ void Foam::netPanel::addResistance(
     const scalarField V = mesh.V(); // volume of cells
     vectorField &Usource = UEqn.source();
     const vectorField &U = UEqn.psi(); // get the velocity field
-
+    vector resistance_total(vector::zero);
     forAll(structuralElements_memb, Elementi)
     {
         // Info << "before add the source term, the f is " << f_global << "\n" << endl;
         // Info << "before add the source term, the F_memb is " << F_memb << "\n" << endl;
+        point p0(structuralPositions_memb[structuralElements_memb[Elementi][0]]);
+        point p1(structuralPositions_memb[structuralElements_memb[Elementi][1]]);
+        point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
+        scalar area(calcArea(p0, p1, p2));
+
         forAll(centres, cellI)
         {
             if (
                 isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                point p0(structuralPositions_memb[structuralElements_memb[Elementi][0]]);
-                point p1(structuralPositions_memb[structuralElements_memb[Elementi][1]]);
-                point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
                 vector eL(calcLifti(p0, p1, p2, U[cellI]));
                 scalar theta(calcTheta(p0, p1, p2, U[cellI]));
-                // scalar area(calcArea(p0, p1, p2));
                 vector Fd = 0.5 * (0.04 + F_memb.value()[0] * cos(theta)) * mag(U[cellI]) * (U[cellI]);    //* area
                 vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL; //* area
 
-                // Info << "before add the source term, the cd is " << F_memb.value()[0] << "\n" << endl;
-                // Info << "before add the source term, the cl is " << F_memb.value()[1] << "\n" << endl;
-                // Info << "before add the source term, the eL is " << eL << "\n" << endl;
-                // Info << "before add the source term, the U is " << U[cellI] << "\n" << endl;
-                // Info << "before add the source term, the theta is " << theta << "\n" << endl;
-                // Info << "before add the source term, the fd is " << Fd << "\n" << endl;
-                // Info << "before add the source term, the fd is " << Fl << "\n" << endl;
-                // Info << "before add the source term, the source term is  " << (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])) << "\n" << endl;
-                // Info << "before add the source term, the area is " << area << "\n" << endl;
-                // Info << "before add the source term, the thickness_memb is " << thickness_memb << "\n" << endl;
-                // Info << "before add the source term, the volume of FV is " << V[cellI] << "\n" << endl;
-
+                Info << "before add the source term, the cd is " << F_memb.value()[0] << "\n" << endl;
+                Info << "before add the source term, the cl is " << F_memb.value()[1] << "\n" << endl;
+                Info << "before add the source term, the eL is " << eL << "\n" << endl;
+                Info << "before add the source term, the U is " << U[cellI] << "\n" << endl;
+                Info << "before add the source term, the theta is " << theta << "\n" << endl;
+                Info << "before add the source term, the fd is " << Fd << "\n" << endl;
+                Info << "before add the source term, the fd is " << Fl << "\n" << endl;
+                Info << "before add the source term, the source term is  " << (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])) << "\n" << endl;
+                Info << "before add the source term, the area is " << area << "\n" << endl;
+                Info << "before add the source term, the thickness_memb is " << thickness_memb << "\n" << endl;
+                Info << "before add the source term, the volume of FV is " << V[cellI] << "\n" << endl;
+                resistance_total+=(Fd + Fl) * V[cellI] / (thickness_memb * 0.6);
                 Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.6); //0.6 is safe factor
             }
         }
     }
+    Info << "The total resistance forces on netting is  " << resistance_total << "\n" << endl;
 }
 
 void Foam::netPanel::updatePoroField(

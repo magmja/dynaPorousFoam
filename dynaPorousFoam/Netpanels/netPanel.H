@@ -6,7 +6,8 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
- No.
+ Must get permission from Hui Cheng
+ Email: hui.cheng@uis.no
 Class
     Foam::netPanel
 
@@ -92,7 +93,7 @@ protected:
 
         bool isInPorousZone
         (
-            const point             x,
+            const point&             x,
             const List<vector>&     structuralPositions,
             const vector&           structuralElementi
         )const;
