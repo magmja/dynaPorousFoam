@@ -93,7 +93,7 @@ protected:
 
         bool isInPorousZone
         (
-            const point&             x,
+            const point&            x,
             const List<vector>&     structuralPositions,
             const vector&           structuralElementi
         )const;
@@ -120,14 +120,13 @@ public:
     void addResistance
         (
             fvVectorMatrix&         UEqn,
-            const volScalarField&   nu,
             const fvMesh&           mesh
         )const;
 
     void updatePoroField
          (
              volScalarField&         porosityField,
-             fvMesh&                 mesh
+             const fvMesh&           mesh
          )const;
     scalar porosity() const
         {

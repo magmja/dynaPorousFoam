@@ -184,15 +184,15 @@ Foam::scalar Foam::netPanel::calcArea(
 }
 
 void Foam::netPanel::addResistance(
-    fvVectorMatrix &UEqn,
-    const volScalarField &nu,
-    const fvMesh &mesh) const
+    fvVectorMatrix       &UEqn,
+    const fvMesh         &mesh) const
 {
-    const vectorField &centres(mesh.C());
     const scalarField V = mesh.V(); // volume of cells
     vectorField &Usource = UEqn.source();
     const vectorField &U = UEqn.psi(); // get the velocity field
     vector resistance_total(vector::zero);
+    // get the center of all the cells
+    const vectorField &centres(mesh.C());
     forAll(structuralElements_memb, Elementi)
     {
         // Info << "before add the source term, the f is " << f_global << "\n" << endl;
@@ -201,39 +201,44 @@ void Foam::netPanel::addResistance(
         point p1(structuralPositions_memb[structuralElements_memb[Elementi][1]]);
         point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
         scalar area(calcArea(p0, p1, p2));
-
+        // Info << "before cell loop, the\t " << Elementi << " \tth 's the area is " << area << "\n" << endl;
+        // Info << "before cell loop, the\t " << Elementi << " \tth 's the p1 is "   << p1 << "\n" << endl;
+        // Info << "before cell loop, the\t " << Elementi << " \tth 's the p2 is "   << p2 << "\n" << endl;
+        // Info << "before cell loop, the\t " << Elementi << " \tth 's the p0 is "   << p0 << "\n" << endl;
+        // loop through all the cell,
         forAll(centres, cellI)
         {
-            if (
-                isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
+            // Info << "In addresistance, the center of the" << cellI<<"cell is  " << centres[cellI] << " And it is in the porous zone?" << isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]) << "\n" << endl;
+            if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
+                // Info << "before add the source term, the cd is " << F_memb.value()[0] << "\n" << endl;
+                // Info << "before add the source term, the cl is " << F_memb.value()[1] << "\n" << endl;
                 vector eL(calcLifti(p0, p1, p2, U[cellI]));
                 scalar theta(calcTheta(p0, p1, p2, U[cellI]));
                 vector Fd = 0.5 * (0.04 + F_memb.value()[0] * cos(theta)) * mag(U[cellI]) * (U[cellI]);    //* area
                 vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL; //* area
 
-                // Info << "before add the source term, the cd is " << F_memb.value()[0] << "\n" << endl;
-                // Info << "before add the source term, the cl is " << F_memb.value()[1] << "\n" << endl;
                 // Info << "before add the source term, the eL is " << eL << "\n" << endl;
                 // Info << "before add the source term, the U is " << U[cellI] << "\n" << endl;
                 // Info << "before add the source term, the theta is " << theta << "\n" << endl;
                 // Info << "before add the source term, the fd is " << Fd << "\n" << endl;
                 // Info << "before add the source term, the fd is " << Fl << "\n" << endl;
                 // Info << "before add the source term, the source term is  " << (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])) << "\n" << endl;
-                // Info << "before add the source term, the area is " << area << "\n" << endl;
+                
                 // Info << "before add the source term, the thickness_memb is " << thickness_memb << "\n" << endl;
                 // Info << "before add the source term, the volume of FV is " << V[cellI] << "\n" << endl;
-                resistance_total+=(Fd + Fl) * V[cellI] / (thickness_memb * 0.6);
-                Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.6); //0.6 is safe factor
+                resistance_total+=(Fd + Fl) * V[cellI] / (thickness_memb * 0.8);
+                Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.8); //0.6 is safe factor
             }
+
         }
     }
     Info << "The total resistance forces on netting is  " << resistance_total << "\n" << endl;
 }
 
 void Foam::netPanel::updatePoroField(
-    volScalarField &porosityField,
-    fvMesh &mesh) const
+    volScalarField       &porosityField,
+    const fvMesh         &mesh) const
 {
     // step1 set all the cell as 1
     forAll(mesh.C(), cellI)
@@ -246,10 +251,13 @@ void Foam::netPanel::updatePoroField(
     forAll(structuralElements_memb, Elementi)
     {
         // loop through all the cell,
+        
         forAll(centres, cellI)
         {
+
             if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
+                // Info << "In updateporofield, the center of the" << cellI<<"cell is  " << centres[cellI] << " And it is in the porous zone"<< "\n" << endl;
                 porosityField[cellI] = Sn_memb;
             }
         }
