@@ -104,7 +104,7 @@ bool Foam::netPanel::isInPorousZone(
     vector panelNorm = calcNorm2(pointI, pointII, pointIII);  // a unit vector to indicate the normal 
     scalar dis(mag((x - pointI) & panelNorm));
     // define a const scalar as the distance between point x to net panel
-    if (dis <= thickness_memb) // distance is less than half thickness
+    if (dis <= thickness_memb/2) // distance is less than half thickness
     {
         scalar panelarea(calcArea(pointI, pointII, pointIII));
         vector projectedPoint(0, 0, 0);       // initial the projected point is 0,0,0

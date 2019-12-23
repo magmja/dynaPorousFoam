@@ -19,6 +19,7 @@ NetInfo1
 {
     Sn 0.2;
     thickness        0.01; //  should be integral times of half mesh size of the net
+    meshLength       0.16; // mesh size in the FE model
 }
 
 

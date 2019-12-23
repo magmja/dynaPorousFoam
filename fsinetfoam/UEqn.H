@@ -10,7 +10,7 @@ fvVectorMatrix UEqn
 
 UEqn.relax();
 
-Nettings.addResistance(UEqn,nu,mesh);
+Nettings.addResistance(UEqn,mesh);
 
 
 fvOptions.constrain(UEqn);

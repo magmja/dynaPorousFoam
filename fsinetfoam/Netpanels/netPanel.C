@@ -30,7 +30,7 @@ Foam::scalar Foam::netPanel::calcArea(
 }
 
 bool Foam::netPanel::isInPorousZone(
-    const point x,
+    const point &x,
     const List<vector> &structuralPositions_memb,
     const vector &structuralElementi) const
 {
@@ -60,13 +60,29 @@ bool Foam::netPanel::isInPorousZone(
         scalar triSma2 = calcArea(pointI, pointII, projectedPoint);
         //  the area of the three trigular shapes.
 
-        if ((triSma0 + triSma1 + triSma2) <= SMALL + panelarea)
+        if ((triSma0 + triSma1 + triSma2) <= SMALL + panelarea * 1.0)
         {
             result = true;
         }
     }
 
     return result;
+}
+
+Foam::vector Foam::netPanel::calcNorm(
+    const point &pointI,
+    const point &pointII,
+    const point &pointIII,
+    const vector &fluidVelocity) const
+{
+    const vector a(pointI - pointII);
+    const vector b(pointI - pointIII);
+    vector norm(a ^ b / (mag(a ^ b) + SMALL));
+    if ((norm & fluidVelocity) < 0) // assume the velocity is x+
+    {
+        norm = -norm;
+    }
+    return norm; // can point out or in the panel.
 }
 
 Foam::vector Foam::netPanel::calcNorm(
@@ -80,6 +96,13 @@ Foam::vector Foam::netPanel::calcNorm(
     return norm; // can point out or in the panel.
 }
 
+Foam::scalar Foam::netPanel::calcDist(
+    const point &pointI,
+    const point &pointII) const
+{
+    return mag(pointI - pointII);
+}
+
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -89,7 +112,8 @@ Foam::netPanel::netPanel(
     : // initial components
       netDict_memb(netDict),
       Sn_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("Sn"))),
-      thickness_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("thickness")))
+      thickness_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("thickness"))),
+      ML_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("meshLength")))
 {
     // creat the netpanel object
 }
@@ -103,39 +127,24 @@ Foam::netPanel::~netPanel()
 
 void Foam::netPanel::addResistance(
     fvVectorMatrix &UEqn,
-    const volScalarField &nu,
     const fvMesh &mesh) const
 {
     const vectorField &centres(mesh.C());
     const scalarField V = mesh.V();
     vectorField &Usource = UEqn.source();
-    scalar volumeE(0.0);
     forAll(structuralElements_memb, Elementi)
     {
-        // scalar num_cell = 0;
-        volumeE = 0;
-        // point pointI = structuralPositions_memb[structuralElements_memb[Elementi],0];
-        // point pointII = structuralPositions_memb[structuralElements_memb[Elementi],1];
-        // point pointIII = structuralPositions_memb[structuralElements_memb[Elementi],2];
-        // // scalar panelarea = calcArea(pointI, pointII, pointIII);
+        point p0(structuralPositions_memb[structuralElements_memb[Elementi][0]]);
+        point p1(structuralPositions_memb[structuralElements_memb[Elementi][1]]);
+        point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
+        scalar area(calcArea(p0, p1, p2));
         vector sourceforce = structuralForces_memb[Elementi];
-
-        // const vectorField &U = UEqn.psi(); // get the velocity field
-        // Info << "before add the source term, the f is " << f_global << "\n" << endl;
-        // Info << "before add the source term, the F_memb is " << F_memb << "\n" << endl;
         forAll(centres, cellI)
         {
             if (
                 isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                volumeE += V[cellI];
-                // num_cell += 1;
-            }
-
-            if (
-                isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
-            {
-                Usource[cellI] -= V[cellI] / volumeE * sourceforce;
+                Usource[cellI] -= sourceforce * V[cellI] / (thickness_memb * area + SMALL);
             }
         }
     }
@@ -163,31 +172,62 @@ void Foam::netPanel::updatePoroField(
         }
     }
 }
+//get velocit based on net panel element.
+// defect: if the net panel is too small, the accuracy can be reduced dramatically.
+// void Foam::netPanel::updateVelocity(
+//     const fvMesh &mesh,
+//     const volVectorField &U)
+// {
+//     List<vector> fluidVelocity(structuralElements_memb.size(), vector::zero);
+//     // get the center of all the cells
+//     const vectorField &centres(mesh.C());
+//     forAll(structuralElements_memb, Elementi) // loop through all the structural emlements
+//     {
+
+//         vector fluidVelocityonElement(vector::zero);
+//         scalar num_fvmesh(0);
+//         forAll(centres, cellI) // loop through all the cell,
+//         {
+//             if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
+//             {
+//                 num_fvmesh += 1;
+//                 fluidVelocityonElement += U[cellI];
+//                 Info << "The velocity is \t " << fluidVelocityonElement << "\n" << endl;
+//                 Info << "The number of mesh is\t " << num_fvmesh << "\n" << endl;
+//                 // sum the velocity in each cell;
+//             }
+//         }
+//         fluidVelocity[Elementi] = fluidVelocityonElement / (SMALL+num_fvmesh);
+//     }
+//     fluidVelocity_memb = fluidVelocity;
+// }
 
 void Foam::netPanel::updateVelocity(
     const fvMesh &mesh,
     const volVectorField &U)
 {
-    List<vector> fluidVelocity(structuralElements_memb.size(), vector::zero);
+    List<vector> fluidVelocity_memb(structuralPositions_memb.size(), vector::zero);
     // get the center of all the cells
     const vectorField &centres(mesh.C());
-    forAll(structuralElements_memb, Elementi) // loop through all the structural emlements
+    Info <<"All the mesh position are"<< structuralPositions_memb<<endl;
+    
+    forAll(structuralPositions_memb, Pointi) // loop through all the structural emlements
     {
-
+        
         vector fluidVelocityonElement(vector::zero);
         scalar num_fvmesh(0);
         forAll(centres, cellI) // loop through all the cell,
+            if (calcDist(centres[cellI], structuralPositions_memb[Pointi]) < (ML_memb * 0.5))
         {
-            if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
-            {
-                num_fvmesh += 1;
-                fluidVelocityonElement += U[cellI];
-                // sum the velocity in each cell;
-            }
+            Info <<"The point ID is "<< Pointi<<", and the velocity is "<<U[cellI]<<"\n"<<endl;
+            fluidVelocityonElement += U[cellI];
+            num_fvmesh += 1;
         }
-        fluidVelocity[Elementi] = fluidVelocityonElement / (SMALL+num_fvmesh);
+        Info <<"The number of mesh is "<< num_fvmesh <<endl;
+        fluidVelocity_memb[Pointi] = fluidVelocityonElement / (SMALL + num_fvmesh);
+        Info <<"The fluid velocity at "<<structuralPositions_memb[Pointi]<<" is  "<< fluidVelocityonElement / (SMALL + num_fvmesh)<<"\n"<<endl;
     }
-    fluidVelocity_memb = fluidVelocity;
+    Info <<"The velocity of all the nodes are  "<<  fluidVelocity_memb <<"\n"<<endl;
 }
 
 // * * * * * * * * * * * * * * Communication Functions  * * * * * * * * * * * * * * //

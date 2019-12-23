@@ -32,39 +32,6 @@ Group
 Description
     Transient solver for incompressible, turbulent flow, using the PISO
     algorithm.
-
-    \heading Solver details
-    The solver uses the PISO algorithm to solve the continuity equation:
-
-        \f[
-            \div \vec{U} = 0
-        \f]
-
-    and momentum equation:
-
-        \f[
-            \ddt{\vec{U}} + \div \left( \vec{U} \vec{U} \right) - \div \gvec{R}
-          = - \grad p
-        \f]
-
-    Where:
-    \vartable
-        \vec{U} | Velocity
-        p       | Pressure
-        \vec{R} | Stress tensor
-    \endvartable
-
-    Sub-models include:
-    - turbulence modelling, i.e. laminar, RAS or LES
-    - run-time selectable MRF and finite volume options, e.g. explicit porosity
-
-    \heading Required fields
-    \plaintable
-        U       | Velocity [m/s]
-        p       | Kinematic pressure, p/rho [m2/s2]
-        \<turbulence fields\> | As required by user selection
-    \endplaintable
-
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
@@ -98,7 +65,7 @@ int main(int argc, char *argv[])
 
     Info << "\nStarting time loop\n"
          << endl;
-    fileName output("velocityOnElements.dat");
+    fileName output("velocityOnNodes.dat");
     OFstream os(output);
     while (runTime.loop())
     {
@@ -128,7 +95,6 @@ int main(int argc, char *argv[])
                 mesh,
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE));
-
         Nettings.readPosi(structuralPositions);
 
         IOdictionary structuralFh(
@@ -138,11 +104,12 @@ int main(int argc, char *argv[])
                 mesh,
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE));
-
         Nettings.readForce(structuralFh);
         
         Nettings.updatePoroField(porosityField, mesh);
+        Info << "Before update the fluid velocity"<<Nettings.FluidU()<<endl;
         Nettings.updateVelocity(mesh,U);
+        Info << "After updateporofield fluid velocity are"<<Nettings.FluidU()<<endl;
         os << Nettings.FluidU() << endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
 

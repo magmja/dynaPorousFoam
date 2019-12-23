@@ -48,6 +48,8 @@ protected:
     const dictionary netDict_memb;
     const scalar thickness_memb; // thickness of the net panel
     const scalar Sn_memb;
+    const scalar ML_memb;
+    
     List<vector> structuralPositions_memb; // positions of each noeds
     List<vector> structuralElements_memb;
     List<vector> structuralForces_memb;
@@ -58,14 +60,25 @@ protected:
         const point &pointI,
         const point &pointII,
         const point &pointIII) const;
+    vector calcNorm(    
+            const point& pointI,
+            const point& pointII,
+            const point& pointIII,
+            const vector& fluidVelocity)const;
     scalar calcArea(
         const point &pointI,
         const point &pointII,
         const point &pointIII) const;
+    scalar calcDist(
+        const point &pointI,
+        const point &pointII) const;
+
+
     bool isInPorousZone(
-        const point x,
+        const point &x,
         const List<vector> &structuralPositions,
         const vector &structuralElementi) const;
+
 
 public:
     // Constructors
@@ -78,7 +91,6 @@ public:
     // public Member Functions
     void addResistance(
         fvVectorMatrix &UEqn,
-        const volScalarField &nu,
         const fvMesh &mesh) const;
 
     void updatePoroField(
