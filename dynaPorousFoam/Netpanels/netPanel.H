@@ -61,7 +61,7 @@ protected:
             const point& pointIII,
             const vector& fluidVelocity
         )const;
-        vector calcNorm2
+        vector calcNorm
         (    
             const point& pointI,
             const point& pointII,

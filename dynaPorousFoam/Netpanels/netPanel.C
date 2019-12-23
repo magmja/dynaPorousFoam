@@ -101,7 +101,7 @@ bool Foam::netPanel::isInPorousZone(
     const point pointI = structuralPositions_memb[structuralElementi[0]];
     const point pointII = structuralPositions_memb[structuralElementi[1]];
     const point pointIII = structuralPositions_memb[structuralElementi[2]];
-    vector panelNorm = calcNorm2(pointI, pointII, pointIII);  // a unit vector to indicate the normal 
+    vector panelNorm = calcNorm(pointI, pointII, pointIII);  // a unit vector to indicate the normal 
     scalar dis(mag((x - pointI) & panelNorm));
     // define a const scalar as the distance between point x to net panel
     if (dis <= thickness_memb/2) // distance is less than half thickness
@@ -129,7 +129,7 @@ bool Foam::netPanel::isInPorousZone(
 
     return result;
 }
-Foam::vector Foam::netPanel::calcNorm2(
+Foam::vector Foam::netPanel::calcNorm(
     const point &pointI,
     const point &pointII,
     const point &pointIII) const

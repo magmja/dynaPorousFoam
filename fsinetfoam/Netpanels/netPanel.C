@@ -17,34 +17,33 @@ License
 // * * * * * * * * * * * * * Static Member Functions * * * * * * * * * * * * //
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
-//- transform coefficients
+
 Foam::scalar Foam::netPanel::calcArea(
     const point &pointI,
     const point &pointII,
     const point &pointIII) const
-{ // the area of the triangular net panel
-    scalar panelarea(
-        0.5 * mag(
-                  (pointI - pointII) ^ (pointI - pointIII)));
-    return panelarea;
+{
+    const vector a(pointI - pointII);
+    const vector b(pointI - pointIII);
+    return 0.5 * mag(a ^ b);
 }
 
 bool Foam::netPanel::isInPorousZone(
-    const point &x,
-    const List<vector> &structuralPositions_memb,
-    const vector &structuralElementi) const
+    const point&            x,
+    const List<vector>&     structuralPositions_memb,
+    const vector&           structuralElementi) const
 {
     bool result(false); // initial value
 
     const point pointI = structuralPositions_memb[structuralElementi[0]];
     const point pointII = structuralPositions_memb[structuralElementi[1]];
     const point pointIII = structuralPositions_memb[structuralElementi[2]];
-    vector panelNorm = calcNorm(pointI, pointII, pointIII);
-    scalar panelarea = calcArea(pointI, pointII, pointIII);
+    vector panelNorm = calcNorm(pointI, pointII, pointIII);  // a unit vector to indicate the normal 
     scalar dis(mag((x - pointI) & panelNorm));
     // define a const scalar as the distance between point x to net panel
-    if (dis <= thickness_memb / 2) // distance is less than half thickness
+    if (dis <= thickness_memb/2) // distance is less than half thickness
     {
+        scalar panelarea(calcArea(pointI, pointII, pointIII));
         vector projectedPoint(0, 0, 0);       // initial the projected point is 0,0,0
         if (((x - pointI) & panelNorm) < 0.0) // on the side of normal vector
         {
@@ -54,13 +53,12 @@ bool Foam::netPanel::isInPorousZone(
         {
             projectedPoint = (x - panelNorm * dis);
         }
-        // projectedP is the projected point on the net panel
-        scalar triSma0 = calcArea(projectedPoint, pointII, pointIII);
-        scalar triSma1 = calcArea(pointI, projectedPoint, pointIII);
-        scalar triSma2 = calcArea(pointI, pointII, projectedPoint);
-        //  the area of the three trigular shapes.
-
-        if ((triSma0 + triSma1 + triSma2) <= SMALL + panelarea * 1.0)
+        // projectedPiont is the projected point on the net panel
+        scalar panelarea3(calcArea(pointI, pointII, projectedPoint) +
+                          calcArea(pointI, projectedPoint, pointIII) + 
+                          calcArea(projectedPoint, pointII, pointIII)
+                         ); //  the area of the three trigular shapes.
+        if (panelarea3 <= SMALL + panelarea*1.03)// safe factor
         {
             result = true;
         }
@@ -68,7 +66,6 @@ bool Foam::netPanel::isInPorousZone(
 
     return result;
 }
-
 Foam::vector Foam::netPanel::calcNorm(
     const point &pointI,
     const point &pointII,
@@ -205,29 +202,40 @@ void Foam::netPanel::updatePoroField(
 void Foam::netPanel::updateVelocity(
     const fvMesh &mesh,
     const volVectorField &U)
-{
+{  // Get the velocity at the nearest cell center. 
     List<vector> fluidVelocity_memb(structuralPositions_memb.size(), vector::zero);
     // get the center of all the cells
     const vectorField &centres(mesh.C());
-    Info <<"All the mesh position are"<< structuralPositions_memb<<endl;
+    // Info <<"All the/ mesh position are"<< structuralPositions_memb<<endl;
     
     forAll(structuralPositions_memb, Pointi) // loop through all the structural emlements
     {
         
-        vector fluidVelocityonElement(vector::zero);
-        scalar num_fvmesh(0);
+        // vector fluidVelocityonElement(vector::zero);
+        // scalar num_fvmesh(0);
+        scalar maxDistance(10);
+        vector nearestCell(vector::zero);
         forAll(centres, cellI) // loop through all the cell,
-            if (calcDist(centres[cellI], structuralPositions_memb[Pointi]) < (ML_memb * 0.5))
         {
-            Info <<"The point ID is "<< Pointi<<", and the velocity is "<<U[cellI]<<"\n"<<endl;
-            fluidVelocityonElement += U[cellI];
-            num_fvmesh += 1;
+            scalar k1(calcDist(centres[cellI], structuralPositions_memb[Pointi]);
+            if (k1<maxDistance)
+            {
+                maxDistance=k1;
+                fluidVelocity_memb[Pointi]=U[cellI];        
+                nearestCell=centers[cellI];
+            }
+            // Info <<"The point ID is "<< Pointi<<", and the velocity is "<<U[cellI]<<"\n"<<endl;
+            // fluidVelocityonElement += U[cellI];
+            // num_fvmesh += 1;
+            
         }
-        Info <<"The number of mesh is "<< num_fvmesh <<endl;
-        fluidVelocity_memb[Pointi] = fluidVelocityonElement / (SMALL + num_fvmesh);
-        Info <<"The fluid velocity at "<<structuralPositions_memb[Pointi]<<" is  "<< fluidVelocityonElement / (SMALL + num_fvmesh)<<"\n"<<endl;
+        Info<<"The center of the nearest cell is "<< nearestCell<< "and the position of the structural point is "<<structuralPositions_memb[Pointi]<< "where the velocity is "<<  fluidVelocity_memb[Pointi]<<"\n"<<endl;
+        
+        // Info <<"The number of mesh is "<< num_fvmesh <<endl;
+        // fluidVelocity_memb[Pointi] = fluidVelocityonElement / (SMALL + num_fvmesh);
+        // Info <<"The fluid velocity at "<<structuralPositions_memb[Pointi]<<" is  "<< fluidVelocityonElement / (SMALL + num_fvmesh)<<"\n"<<endl;
     }
-    Info <<"The velocity of all the nodes are  "<<  fluidVelocity_memb <<"\n"<<endl;
+    // Info <<"The velocity of all the nodes are  "<<  fluidVelocity_memb <<"\n"<<endl;
 }
 
 // * * * * * * * * * * * * * * Communication Functions  * * * * * * * * * * * * * * //
