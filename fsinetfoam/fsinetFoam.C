@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
                 "Fh",
                 runTime.constant(),
                 mesh,
-                IOobject::MUST_READ,
+                IOobject::READ_IF_PRESENT,
                 IOobject::NO_WRITE));
         Nettings.readForce(structuralFh);
         // Info << "The new Force are"<<Nettings.Fhout()<<endl;
