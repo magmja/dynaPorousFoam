@@ -58,7 +58,7 @@ bool Foam::netPanel::isInPorousZone(
                           calcArea(pointI, projectedPoint, pointIII) + 
                           calcArea(projectedPoint, pointII, pointIII)
                          ); //  the area of the three trigular shapes.
-        if (panelarea3 <= SMALL + panelarea*1.03)// safe factor
+        if (panelarea3 <= SMALL + panelarea*1.0)// safe factor
         {
             result = true;
         }
@@ -170,68 +170,34 @@ void Foam::netPanel::updatePoroField(
         }
     }
 }
-//get velocit based on net panel element.
-// defect: if the net panel is too small, the accuracy can be reduced dramatically.
-// void Foam::netPanel::updateVelocity(
-//     const fvMesh &mesh,
-//     const volVectorField &U)
-// {
-//     List<vector> fluidVelocity(structuralElements_memb.size(), vector::zero);
-//     // get the center of all the cells
-//     const vectorField &centres(mesh.C());
-//     forAll(structuralElements_memb, Elementi) // loop through all the structural emlements
-//     {
-
-//         vector fluidVelocityonElement(vector::zero);
-//         scalar num_fvmesh(0);
-//         forAll(centres, cellI) // loop through all the cell,
-//         {
-//             if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
-//             {
-//                 num_fvmesh += 1;
-//                 fluidVelocityonElement += U[cellI];
-//                 Info << "The velocity is \t " << fluidVelocityonElement << "\n" << endl;
-//                 Info << "The number of mesh is\t " << num_fvmesh << "\n" << endl;
-//                 // sum the velocity in each cell;
-//             }
-//         }
-//         fluidVelocity[Elementi] = fluidVelocityonElement / (SMALL+num_fvmesh);
-//     }
-//     fluidVelocity_memb = fluidVelocity;
-// }
 
 Foam::List<Foam::vector> Foam::netPanel::updateVelocity(
-    const fvMesh &mesh,
-    const volVectorField &U)
-    // const fvVectorMatrix       &UEqn)
-
-{  // Get the velocity at the nearest cell center. 
-    // get the center of all the cells
+    const volVectorField &U,
+    const fvMesh &mesh)const
+{
     List<vector> fluidVelocity_memb(structuralPositions_memb.size(), vector::zero);
-    // Info <<"initial velocity is  "<<fluidVelocity_memb<<"\n"<<endl; 
     const vectorField &centres(mesh.C());
-
-    // const vectorField &U = UEqn.psi(); // get the velocity field
-    // Info <<"All the/ mesh position are"<< structuralPositions_memb<<endl;
-    
+    scalar maxDistance(1);  //started from 2 m ML_memb
     forAll(structuralPositions_memb, Pointi) // loop through all the structural emlements
     {
-        scalar maxDistance(1);  //started from 2 m ML_memb
+        maxDistance=1;  //started from 2 m ML_memb
         vector nearestCell(vector::zero);
         scalar loops(0);
         forAll(centres, cellI) // loop through all the cell,
         {
             scalar k1(calcDist(centres[cellI], structuralPositions_memb[Pointi]));
+            Info<< "When cellI is   "<< cellI<< "  the position is "<< centres[cellI]<<"And the distance to "<< structuralPositions_memb[Pointi] <<" is "<<k1<<endl;
             if (k1<maxDistance)
             {
-                
                 maxDistance=k1;
                 fluidVelocity_memb[Pointi]=U[cellI];        
                 nearestCell=centres[cellI];
                 loops+=1;
+            Info<<"After "<<loops<<" times of loop, the nearest cell is "<< nearestCell<<"to point "<<structuralPositions_memb[Pointi]<<"\n"<<endl;        }
             }
-        }
+            
     }
+    Info<< "the velocity on nodes are  "<<fluidVelocity_memb<<endl;
     return fluidVelocity_memb;
 }
 

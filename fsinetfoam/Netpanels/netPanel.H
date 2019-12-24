@@ -99,8 +99,8 @@ public:
         const fvMesh &mesh) const;
 
     List<vector> updateVelocity(
-        const fvMesh &mesh,
-        const volVectorField &U);
+        const volVectorField &U,
+        const fvMesh &mesh)const;
         // const fvVectorMatrix    &UEqn);
 
 

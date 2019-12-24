@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "netPanel.C": "cpp",
+        "fsinetFoam.C": "cpp"
+    }
+}

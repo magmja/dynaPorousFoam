@@ -97,14 +97,6 @@ protected:
             const List<vector>&     structuralPositions,
             const vector&           structuralElementi
         )const;
-        
-        void transformCoeffs
-        (
-            const dimensionedVector&      D,
-            tensor&                       d,
-            const List<vector>&           structuralPositions,
-            const vector&                 structuralElementi
-        ) const;
 
 public:
     // Constructors

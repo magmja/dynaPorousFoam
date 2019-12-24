@@ -110,11 +110,9 @@ int main(int argc, char *argv[])
         
         Nettings.updatePoroField(porosityField, mesh);
         
-        // Info << "Before update the fluid velocity"<<Nettings.FluidU()<<endl;
-        Info << "the velocity on nodes are"<< Nettings.updateVelocity(mesh,U) << endl;
-        // Info << "After updateporofield fluid velocity are"<<Nettings.FluidU()<<endl;
+        Info << "the velocity on nodes are"<< Nettings.updateVelocity(U,mesh) << endl;
         
-        os << Nettings.updateVelocity(mesh,U) << endl;
+        os << Nettings.updateVelocity(U,mesh) << endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
 
         runTime.write();

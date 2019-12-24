@@ -18,79 +18,6 @@ License
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 //- transform coefficients
-void Foam::netPanel::transformCoeffs(
-    const dimensionedVector &D,
-    tensor &d,
-    const List<vector> &structuralPositions_memb,
-    const vector &structuralElementi
-
-    ) const
-{
-    const point pointI = structuralPositions_memb[structuralElementi[0]];
-    const point pointII = structuralPositions_memb[structuralElementi[1]];
-    const point pointIII = structuralPositions_memb[structuralElementi[2]];
-
-    const vector a(pointI - pointII);
-    const vector b(pointIII - pointII);
-    const vector c(pointIII - pointI);
-    vector norm(a ^ b / (mag(a ^ b) + SMALL));
-    const vector x0(1, 0, 0);
-    const vector y0(0, 1, 0);
-    const vector z0(0, 0, 1);
-
-    vector e1(vector::zero); //r
-    vector e2(vector::zero); //g
-    vector e3(vector::zero); //b
-
-    if ((norm & x0) < 0) // assume the velocity is x+
-    {
-        norm = -norm;
-    }
-    e1 = norm;
-
-    if (mag(a) > mag(b))
-    {
-        e3 = b / (mag(b) + SMALL);
-        if (mag(b) > mag(c))
-        {
-            e3 = c / (mag(c) + SMALL);
-        }
-    }
-    else
-    {
-        e3 = a / (mag(a) + SMALL);
-    }
-
-    if ((e3 & x0) < 0) // assume the velocity is x+
-    {
-        e3 = -e3;
-    }
-
-    e2 = (e3 ^ e1 / (mag(e3 ^ e1) + SMALL)); // blue
-    if ((e2 & z0) < 0)                       // assume the velocity is x+
-    {
-        e2 = -e2;
-    }
-
-    // Info << "p1 is : " << pointI << "\n" << endl;
-    // Info << "p2 is : " << pointII << "\n" << endl;
-    // Info << "p3 is : " << pointIII << "\n" << endl;
-
-    // Info << "e1 is : " << e1  << "\n" << endl;
-    // Info << "e2 is : " << e2  << "\n" << endl;
-    // Info << "e3 is : " << e3  << "\n" << endl;
-    // Info << "Tensor e is : " << e.value() << "\n" << endl;
-    const tensor e(
-        e1 & x0 / (mag(e1 * x0) + SMALL), e1 & y0 / (mag(e1 * y0) + SMALL), e1 & z0 / (mag(e1 * z0) + SMALL),
-        e2 & x0 / (mag(e2 * x0) + SMALL), e2 & y0 / (mag(e2 * y0) + SMALL), e2 & z0 / (mag(e2 * z0) + SMALL),
-        e3 & x0 / (mag(e3 * x0) + SMALL), e3 & y0 / (mag(e3 * y0) + SMALL), e3 & z0 / (mag(e3 * z0) + SMALL));
-
-    d.xx() = D.value().x();
-    d.yy() = D.value().y();
-    d.zz() = D.value().z();
-    d = e & d & e.T();
-}
-
 bool Foam::netPanel::isInPorousZone(
     const point&            x,
     const List<vector>&     structuralPositions_memb,
@@ -121,7 +48,7 @@ bool Foam::netPanel::isInPorousZone(
                           calcArea(pointI, projectedPoint, pointIII) + 
                           calcArea(projectedPoint, pointII, pointIII)
                          ); //  the area of the three trigular shapes.
-        if (panelarea3 <= SMALL + panelarea*1.03)// safe factor
+        if (panelarea3 <= SMALL + panelarea*1.0)// safe factor
         {
             result = true;
         }
@@ -191,54 +118,35 @@ void Foam::netPanel::addResistance(
     vectorField &Usource = UEqn.source();
     const vectorField &U = UEqn.psi(); // get the velocity field
     vector resistance_total(vector::zero);
-    vector resistanceForce_total(vector::zero);
-    // get the center of all the cells
-    const vectorField &centres(mesh.C());
+    vector resistanceForce_total(vector::zero); 
+    const vectorField &centres(mesh.C());// get the center of all the cells
+    vector resistanceForce_Net(vector::zero);
     forAll(structuralElements_memb, Elementi)
     {
-        // Info << "before add the source term, the f is " << f_global << "\n" << endl;
-        // Info << "before add the source term, the F_memb is " << F_memb << "\n" << endl;
+        resistanceForce_Net=vector::zero;
         point p0(structuralPositions_memb[structuralElements_memb[Elementi][0]]);
         point p1(structuralPositions_memb[structuralElements_memb[Elementi][1]]);
         point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
         scalar area(calcArea(p0, p1, p2));
-        // Info << "before cell loop, the\t " << Elementi << " \tth 's the area is " << area << "\n" << endl;
-        // Info << "before cell loop, the\t " << Elementi << " \tth 's the p1 is "   << p1 << "\n" << endl;
-        // Info << "before cell loop, the\t " << Elementi << " \tth 's the p2 is "   << p2 << "\n" << endl;
-        // Info << "before cell loop, the\t " << Elementi << " \tth 's the p0 is "   << p0 << "\n" << endl;
-        // loop through all the cell,
         scalar num_cell(0);
-        forAll(centres, cellI)
+        forAll(centres, cellI)          // loop through all the cell,
         {
-            // Info << "In addresistance, the center of the" << cellI<<"cell is  " << centres[cellI] << " And it is in the porous zone?" << isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]) << "\n" << endl;
             if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                // Info << "before add the source term, the cd is " << F_memb.value()[0] << "\n" << endl;
-                // Info << "before add the source term, the cl is " << F_memb.value()[1] << "\n" << endl;
                 vector eL(calcLifti(p0, p1, p2, U[cellI]));
                 scalar theta(calcTheta(p0, p1, p2, U[cellI]));
                 vector Fd = 0.5 * (0.04 + F_memb.value()[0] * cos(theta)) * mag(U[cellI]) * (U[cellI]);    //* area
                 vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL; //* area
-
-                // Info << "before add the source term, the eL is " << eL << "\n" << endl;
-                // Info << "before add the source term, the U is " << U[cellI] << "\n" << endl;
-                // Info << "before add the source term, the theta is " << theta << "\n" << endl;
-                // Info << "before add the source term, the fd is " << Fd << "\n" << endl;
-                // Info << "before add the source term, the fd is " << Fl << "\n" << endl;
-                // Info << "before add the source term, the source term is  " << (Fd + Fl) / (thickness_memb / (SMALL + V[cellI])) << "\n" << endl;
-                
-                // Info << "before add the source term, the thickness_memb is " << thickness_memb << "\n" << endl;
-                // Info << "before add the source term, the volume of FV is " << V[cellI] << "\n" << endl;
                 num_cell+=1;
-                resistanceForce_total+=(Fd + Fl)*1000.0;  // 1000 is the density of fluid          
-               
+                resistanceForce_Net+=(Fd + Fl)*1000.0;  // 1000 is the density of fluid          
                 resistance_total+=(Fd + Fl) * V[cellI] / (thickness_memb * 0.95);
                 Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.95); //0.6 is safe factor
             }
         }
-    resistanceForce_total*=area/(SMALL+num_cell);
-
+    resistanceForce_Net*=area/(SMALL+num_cell);
     }
+    resistanceForce_total+=resistanceForce_Net;
+
     Info << "The total resistance source term on netting is  " << resistance_total << "\n" << endl;
     Info << "The total resistance force on netting is  " << resistanceForce_total << "\n" << endl;
 }
@@ -258,13 +166,10 @@ void Foam::netPanel::updatePoroField(
     forAll(structuralElements_memb, Elementi)
     {
         // loop through all the cell,
-        
         forAll(centres, cellI)
         {
-
             if (isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                // Info << "In updateporofield, the center of the" << cellI<<"cell is  " << centres[cellI] << " And it is in the porous zone"<< "\n" << endl;
                 porosityField[cellI] = Sn_memb;
             }
         }
