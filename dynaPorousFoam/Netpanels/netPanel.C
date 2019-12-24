@@ -191,6 +191,7 @@ void Foam::netPanel::addResistance(
     vectorField &Usource = UEqn.source();
     const vectorField &U = UEqn.psi(); // get the velocity field
     vector resistance_total(vector::zero);
+    vector resistanceForce_total(vector::zero);
     // get the center of all the cells
     const vectorField &centres(mesh.C());
     forAll(structuralElements_memb, Elementi)
@@ -206,6 +207,7 @@ void Foam::netPanel::addResistance(
         // Info << "before cell loop, the\t " << Elementi << " \tth 's the p2 is "   << p2 << "\n" << endl;
         // Info << "before cell loop, the\t " << Elementi << " \tth 's the p0 is "   << p0 << "\n" << endl;
         // loop through all the cell,
+        scalar num_cell(0);
         forAll(centres, cellI)
         {
             // Info << "In addresistance, the center of the" << cellI<<"cell is  " << centres[cellI] << " And it is in the porous zone?" << isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]) << "\n" << endl;
@@ -227,13 +229,18 @@ void Foam::netPanel::addResistance(
                 
                 // Info << "before add the source term, the thickness_memb is " << thickness_memb << "\n" << endl;
                 // Info << "before add the source term, the volume of FV is " << V[cellI] << "\n" << endl;
-                resistance_total+=(Fd + Fl) * V[cellI] / (thickness_memb * 0.8);
-                Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.8); //0.6 is safe factor
+                num_cell+=1;
+                resistanceForce_total+=(Fd + Fl)*1000.0;  // 1000 is the density of fluid          
+               
+                resistance_total+=(Fd + Fl) * V[cellI] / (thickness_memb * 0.95);
+                Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.95); //0.6 is safe factor
             }
-
         }
+    resistanceForce_total*=area/(SMALL+num_cell);
+
     }
-    Info << "The total resistance forces on netting is  " << resistance_total << "\n" << endl;
+    Info << "The total resistance source term on netting is  " << resistance_total << "\n" << endl;
+    Info << "The total resistance force on netting is  " << resistanceForce_total << "\n" << endl;
 }
 
 void Foam::netPanel::updatePoroField(
@@ -298,7 +305,7 @@ Foam::netPanel::netPanel(
     : // initial components
       netDict_memb(netDict),
       Sn_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("Sn"))),
-      thickness_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("halfthickness"))),
+      thickness_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("thickness"))),
       D_memb(netDict_memb.subDict("porousProperties").lookup("D")),
       F_memb(netDict_memb.subDict("porousProperties").lookup("F"))
 {

@@ -49,11 +49,12 @@ protected:
     const scalar thickness_memb; // thickness of the net panel
     const scalar Sn_memb;
     const scalar ML_memb;
+    const scalar rho_fluid;
+
     
     List<vector> structuralPositions_memb; // positions of each noeds
     List<vector> structuralElements_memb;
     List<vector> structuralForces_memb;
-    List<vector> fluidVelocity_memb;
 
     //-Private member function
     vector calcNorm(
@@ -97,9 +98,10 @@ public:
         volScalarField &porosityField,
         const fvMesh &mesh) const;
 
-    void updateVelocity(
+    List<vector> updateVelocity(
         const fvMesh &mesh,
         const volVectorField &U);
+        // const fvVectorMatrix    &UEqn);
 
 
 
@@ -117,10 +119,10 @@ public:
     {
         return structuralElements_memb;
     };
-    List<vector> FluidU() const
-    {
-        return fluidVelocity_memb;
-    };
+    // List<vector> FluidU() const
+    // {
+    //     return fluidVelocity_memb;
+    // };
     List<vector> Fhout() const
     {
         return structuralForces_memb;

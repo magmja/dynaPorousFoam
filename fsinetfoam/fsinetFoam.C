@@ -97,6 +97,7 @@ int main(int argc, char *argv[])
                 IOobject::NO_WRITE));
         Nettings.readPosi(structuralPositions);
 
+        // Info << "The new positions are"<<Nettings.posi()<<endl;
         IOdictionary structuralFh(
             IOobject(
                 "Fh",
@@ -105,12 +106,15 @@ int main(int argc, char *argv[])
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE));
         Nettings.readForce(structuralFh);
+        // Info << "The new Force are"<<Nettings.Fhout()<<endl;
         
         Nettings.updatePoroField(porosityField, mesh);
-        Info << "Before update the fluid velocity"<<Nettings.FluidU()<<endl;
-        Nettings.updateVelocity(mesh,U);
-        Info << "After updateporofield fluid velocity are"<<Nettings.FluidU()<<endl;
-        os << Nettings.FluidU() << endl;
+        
+        // Info << "Before update the fluid velocity"<<Nettings.FluidU()<<endl;
+        Info << "the velocity on nodes are"<< Nettings.updateVelocity(mesh,U) << endl;
+        // Info << "After updateporofield fluid velocity are"<<Nettings.FluidU()<<endl;
+        
+        os << Nettings.updateVelocity(mesh,U) << endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
 
         runTime.write();

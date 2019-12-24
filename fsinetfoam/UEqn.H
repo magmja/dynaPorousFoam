@@ -21,3 +21,4 @@ if (piso.momentumPredictor())
 
     fvOptions.correct(U);
 }
+// Nettings.updateVelocity(mesh,UEqn);
