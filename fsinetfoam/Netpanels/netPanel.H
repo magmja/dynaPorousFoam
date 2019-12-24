@@ -55,6 +55,7 @@ protected:
     List<vector> structuralPositions_memb; // positions of each noeds
     List<vector> structuralElements_memb;
     List<vector> structuralForces_memb;
+    List<vector> fluidVelocity_memb;
 
     //-Private member function
     vector calcNorm(
@@ -98,10 +99,9 @@ public:
         volScalarField &porosityField,
         const fvMesh &mesh) const;
 
-    List<vector> updateVelocity(
+    void updateVelocity(
         const volVectorField &U,
-        const fvMesh &mesh)const;
-        // const fvVectorMatrix    &UEqn);
+        const fvMesh &mesh);
 
 
 
@@ -119,10 +119,10 @@ public:
     {
         return structuralElements_memb;
     };
-    // List<vector> FluidU() const
-    // {
-    //     return fluidVelocity_memb;
-    // };
+    List<vector> FluidU() const
+    {
+        return fluidVelocity_memb;
+    };
     List<vector> Fhout() const
     {
         return structuralForces_memb;

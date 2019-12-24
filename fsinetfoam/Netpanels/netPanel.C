@@ -130,6 +130,8 @@ void Foam::netPanel::addResistance(
     const vectorField &centres(mesh.C());
     const scalarField V = mesh.V();
     vectorField &Usource = UEqn.source();
+    Info<< "In addResistance, number of mesh is "<<centres.size()<<endl;
+    Info<< "In addResistance, number of U is "<<Usource.size()<<endl;
     forAll(structuralElements_memb, Elementi)
     {
         point p0(structuralPositions_memb[structuralElements_memb[Elementi][0]]);
@@ -152,6 +154,7 @@ void Foam::netPanel::updatePoroField(
     volScalarField &porosityField,
     const fvMesh &mesh) const
 {
+    Info<< "In updatePoroField, number of mesh is "<<(mesh.C()).size()<<endl;
     // step1 set all the cell as 1
     forAll(mesh.C(), cellI)
     {
@@ -159,6 +162,7 @@ void Foam::netPanel::updatePoroField(
     }
     // get the center of all the cells
     const vectorField &centres(mesh.C());
+    //- step 2 assign sn to the proper mesh
     forAll(structuralElements_memb, Elementi) // loop through all the structural emlements
     {
         forAll(centres, cellI) // loop through all the cell,
@@ -171,35 +175,76 @@ void Foam::netPanel::updatePoroField(
     }
 }
 
-Foam::List<Foam::vector> Foam::netPanel::updateVelocity(
+// ge the velocity at the net panel center 
+void Foam::netPanel::updateVelocity(
     const volVectorField &U,
-    const fvMesh &mesh)const
+    const fvMesh &mesh)
 {
-    List<vector> fluidVelocity_memb(structuralPositions_memb.size(), vector::zero);
+    List<vector> fluidVelocities(structuralElements_memb.size(), vector::zero);
     const vectorField &centres(mesh.C());
+    Info<< "In updateVelocity, number of mesh is "<<centres.size()<<endl;
+    Info<< "In updateVelocity, number of U is "<<U.size()<<endl;
     scalar maxDistance(1);  //started from 2 m ML_memb
-    forAll(structuralPositions_memb, Pointi) // loop through all the structural emlements
+    forAll(structuralElements_memb, Elemi) // loop through all the structural emlements
     {
+        point p0(structuralPositions_memb[structuralElements_memb[Elemi][0]]);
+        point p1(structuralPositions_memb[structuralElements_memb[Elemi][1]]);
+        point p2(structuralPositions_memb[structuralElements_memb[Elemi][2]]);
+        point EPcenter=(p0+p1+p2)/3.0;
         maxDistance=1;  //started from 2 m ML_memb
         vector nearestCell(vector::zero);
         scalar loops(0);
         forAll(centres, cellI) // loop through all the cell,
         {
-            scalar k1(calcDist(centres[cellI], structuralPositions_memb[Pointi]));
-            Info<< "When cellI is   "<< cellI<< "  the position is "<< centres[cellI]<<"And the distance to "<< structuralPositions_memb[Pointi] <<" is "<<k1<<endl;
+            scalar k1(calcDist(centres[cellI], EPcenter));
+            // Info<< "When cellI is   "<< cellI<< "  the position is "<< centres[cellI]<<"And the distance to "<< structuralPositions_memb[Pointi] <<" is "<<k1<<endl;
             if (k1<maxDistance)
             {
                 maxDistance=k1;
-                fluidVelocity_memb[Pointi]=U[cellI];        
+                fluidVelocities[Elemi]=U[cellI];        
                 nearestCell=centres[cellI];
                 loops+=1;
-            Info<<"After "<<loops<<" times of loop, the nearest cell is "<< nearestCell<<"to point "<<structuralPositions_memb[Pointi]<<"\n"<<endl;        }
+            Info<<"After "<<loops<<" times of loop, the nearest cell is "<< nearestCell<<"to point "<<EPcenter<<"\n"<<endl;        }
             }
-            
     }
+    fluidVelocity_memb=fluidVelocities;  // only assige onece
     Info<< "the velocity on nodes are  "<<fluidVelocity_memb<<endl;
-    return fluidVelocity_memb;
 }
+
+// this function is based on the nodes position.
+// void Foam::netPanel::updateVelocity(
+//     const volVectorField &U,
+//     const fvMesh &mesh)
+// {
+//     List<vector> fluidVelocities(structuralPositions_memb.size(), vector::zero);
+//     const vectorField &centres(mesh.C());
+//     Info<< "In updateVelocity, number of mesh is "<<centres.size()<<endl;
+//     Info<< "In updateVelocity, number of U is "<<U.size()<<endl;
+//     scalar maxDistance(1);  //started from 2 m ML_memb
+//     forAll(structuralPositions_memb, Pointi) // loop through all the structural emlements
+//     {
+//         maxDistance=1;  //started from 2 m ML_memb
+//         vector nearestCell(vector::zero);
+//         scalar loops(0);
+//         forAll(centres, cellI) // loop through all the cell,
+//         {
+//             scalar k1(calcDist(centres[cellI], structuralPositions_memb[Pointi]));
+//             // Info<< "When cellI is   "<< cellI<< "  the position is "<< centres[cellI]<<"And the distance to "<< structuralPositions_memb[Pointi] <<" is "<<k1<<endl;
+//             if (k1<maxDistance)
+//             {
+//                 maxDistance=k1;
+//                 fluidVelocities[Pointi]=U[cellI];        
+//                 nearestCell=centres[cellI];
+//                 loops+=1;
+//             Info<<"After "<<loops<<" times of loop, the nearest cell is "<< nearestCell<<"to point "<<structuralPositions_memb[Pointi]<<"\n"<<endl;        }
+//             }
+//     }
+//     fluidVelocity_memb=fluidVelocities;  // only assige onece
+//     Info<< "the velocity on nodes are  "<<fluidVelocity_memb<<endl;
+// }
+
+
+
 
 // * * * * * * * * * * * * * * Communication Functions  * * * * * * * * * * * * * * //
 // - the following function is used to communicate with FE solver.

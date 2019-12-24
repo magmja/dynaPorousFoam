@@ -108,11 +108,12 @@ int main(int argc, char *argv[])
         Nettings.readForce(structuralFh);
         // Info << "The new Force are"<<Nettings.Fhout()<<endl;
         
+        Nettings.updateVelocity(U,mesh);
         Nettings.updatePoroField(porosityField, mesh);
         
-        Info << "the velocity on nodes are"<< Nettings.updateVelocity(U,mesh) << endl;
+        Info << "the velocity on nodes are"<< Nettings.FluidU() << endl;
         
-        os << Nettings.updateVelocity(U,mesh) << endl;
+        os << Nettings.FluidU() << endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
 
         runTime.write();
