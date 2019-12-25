@@ -49,6 +49,8 @@ IOdictionary netDict(
         mesh,
         IOobject::MUST_READ,
         IOobject::NO_WRITE));
+netPanel Nettings(netDict);
+
 
 IOdictionary structuralPositions(
     IOobject(
@@ -66,22 +68,25 @@ IOdictionary structuralElements(
         IOobject::MUST_READ,
         IOobject::NO_WRITE));
 
-IOdictionary structuralFh(
-    IOobject(
-        "Fh",
-        runTime.constant(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE));
+if (exists("Fh"))
+{
+    IOdictionary structuralFh(
+        IOobject(
+            "Fh",
+            runTime.constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE));
+    Nettings.readForce(structuralFh);
+}
 
-netPanel Nettings(netDict);
+
 
 Info << "Solidity of the structure is " << Nettings.Sn() << "\n"
      << endl;
 // constrcut net panel
 Nettings.readPosi(structuralPositions);
 Nettings.readSurf(structuralElements);
-Nettings.readForce(structuralFh);
 
 dimensionedScalar poro(
     "poro",

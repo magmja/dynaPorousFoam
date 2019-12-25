@@ -46,16 +46,16 @@ class netPanel
 protected:
     //- Private data
     const dictionary netDict_memb;
-    const scalar thickness_memb; // thickness of the net panel
-    const scalar Sn_memb;
-    const scalar ML_memb;
-    const scalar rho_fluid;
-
+    const scalar thickness_memb; // thickness of the net panel in CFD, thickness of the porous media.
+    const scalar Sn_memb;        // solidity of the netting
+    const scalar ML_memb;        // length between neighbor knots
+    const scalar dw_memb;        // diameter of the twine in netting  
+    const scalar fluidrho_memb;
     
-    List<vector> structuralPositions_memb; // positions of each noeds
-    List<vector> structuralElements_memb;
-    List<vector> structuralForces_memb;
-    List<vector> fluidVelocity_memb;
+    const List<vector> structuralElements_memb;        // screen model of netting
+    List<vector> structuralPositions_memb;       // positions of each noeds
+    List<vector> structuralForces_memb;          // hydrodynamic forces on all the screen elements
+    List<vector> fluidVelocity_memb;             // velocity on the center of all the screen elements
 
     //-Private member function
     vector calcNorm(
@@ -103,7 +103,10 @@ public:
         const volVectorField &U,
         const fvMesh &mesh);
 
-
+    scalar porosity() const
+    {
+        return 1-Sn_memb*dw_memb/thickness_memb;
+    };
 
     scalar Sn() const
     {

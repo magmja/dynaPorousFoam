@@ -108,9 +108,10 @@ Foam::netPanel::netPanel(
     : // initial components
       netDict_memb(netDict),
       Sn_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("Sn"))),
-      thickness_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("thickness"))),
-      ML_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("meshLength"))),
-      rho_fluid(readScalar(netDict_memb.subDict("NetInfo1").lookup("fluidDensity")))
+      thickness_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("PorousMediaThickness"))),
+      ML_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("halfMeshSize"))),
+      fluidrho_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("fluidDensity"))),
+      dw_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("twineDiameter")))
 {
     // creat the netpanel object
 }
@@ -144,7 +145,7 @@ void Foam::netPanel::addResistance(
             if (
                 isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                Usource[cellI] -= structuralForces_memb[Elementi] / rho_fluid * V[cellI] / (thickness_memb * area + SMALL);
+                Usource[cellI] -= structuralForces_memb[Elementi] / fluidrho_memb * V[cellI] / (thickness_memb * area + SMALL);
             }
         }
     }
@@ -258,7 +259,7 @@ void Foam::netPanel::readSurf(
         word surfname("e" + Foam::name(i));
         surf[i] = structuralElements.lookup(surfname);
     }
-    structuralElements_memb = surf;
+    List<vector> structuralElements_memb(surf);
 }
 
 //- update the position and forces

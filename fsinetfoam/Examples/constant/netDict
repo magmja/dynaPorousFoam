@@ -18,8 +18,10 @@ FoamFile
 NetInfo1
 {
     Sn 0.2;
-    thickness        0.01; //  should be integral times of half mesh size of the net
-    meshLength       0.16; // mesh size in the FE model
+    PorousMediaThickness    0.01;      // should be integral times of half mesh size of the net
+    halfMeshSize           20e-3;     // length between two neighbor knots
+    twineDiameter           2.6e-3;    // diameter of the twine in netting.
+    fluidDensity            1000.0     // density of the fluid 
 }
 
 

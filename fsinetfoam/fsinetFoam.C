@@ -98,14 +98,19 @@ int main(int argc, char *argv[])
         Nettings.readPosi(structuralPositions);
 
         // Info << "The new positions are"<<Nettings.posi()<<endl;
-        IOdictionary structuralFh(
-            IOobject(
-                "Fh",
-                runTime.constant(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::NO_WRITE));
-        Nettings.readForce(structuralFh);
+        
+        if (exists("Fh"))
+        {
+            IOdictionary structuralFh(
+                IOobject(
+                    "Fh",
+                    runTime.constant(),
+                    mesh,
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::NO_WRITE));
+            Nettings.readForce(structuralFh);
+        }
+      
         // Info << "The new Force are"<<Nettings.Fhout()<<endl;
         
         Nettings.updateVelocity(U,mesh);
