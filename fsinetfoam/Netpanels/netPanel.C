@@ -131,7 +131,7 @@ void Foam::netPanel::addResistance(
     const scalarField V = mesh.V();
     vectorField &Usource = UEqn.source();
     Info << "In addResistance, number of mesh is " << centres.size() << endl;
-    Info << "In addResistance, number of U is " << Usource.size() << endl;
+    Info << "The structural elements are " << structuralElements_memb << endl;
     // vector sourceforce = structuralForces_memb;
     forAll(structuralForces_memb, Elementi)
     {
@@ -139,7 +139,7 @@ void Foam::netPanel::addResistance(
         point p1(structuralPositions_memb[structuralElements_memb[Elementi][1]]);
         point p2(structuralPositions_memb[structuralElements_memb[Elementi][2]]);
         scalar area(calcArea(p0, p1, p2));
-        
+
         forAll(centres, cellI)
         {
             if (
@@ -156,6 +156,7 @@ void Foam::netPanel::updatePoroField(
     const fvMesh &mesh) const
 {
     Info << "In updatePoroField, number of mesh is " << (mesh.C()).size() << endl;
+    Info << "The structural elements are " << structuralElements_memb << endl;
     // step1 set all the cell as 1
     forAll(mesh.C(), cellI)
     {
@@ -183,8 +184,9 @@ void Foam::netPanel::updateVelocity(
 {
     List<vector> fluidVelocities(structuralElements_memb.size(), vector::zero);
     const vectorField &centres(mesh.C());
-    Info << "In updateVelocity, number of mesh is " << centres.size() << endl;
-    Info << "In updateVelocity, number of U is " << U.size() << endl;
+    const label &nCells = mesh.nCells();
+    Info << "In updateVelocity, number of mesh is " << nCells << endl;
+    // Info << "The structural elements are " << structuralElements_memb << endl;
     scalar maxDistance(1);                 //started from 2 m ML_memb
     forAll(structuralElements_memb, Elemi) // loop through all the structural emlements
     {
@@ -208,6 +210,11 @@ void Foam::netPanel::updateVelocity(
                 Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EPcenter << "\n"
                      << endl;
             }
+        }
+        if (maxDistance >= 0.8)
+        {
+            Info << "Warnning!! I cannot find the nearest cell to point " << EPcenter << " , because the minimum distance to this point is  " << maxDistance << "\n"
+                 << endl;
         }
     }
     fluidVelocity_memb = fluidVelocities; // only assige onece
@@ -259,7 +266,8 @@ void Foam::netPanel::readSurf(
         word surfname("e" + Foam::name(i));
         surf[i] = structuralElements.lookup(surfname);
     }
-    List<vector> structuralElements_memb(surf);
+    structuralElements_memb = surf;
+    // Info << "The structural elements are " << structuralElements_memb << endl;
 }
 
 //- update the position and forces

@@ -52,7 +52,7 @@ protected:
     const scalar dw_memb;        // diameter of the twine in netting  
     const scalar fluidrho_memb;
     
-    const List<vector> structuralElements_memb;        // screen model of netting
+    List<vector> structuralElements_memb;        // screen model of netting
     List<vector> structuralPositions_memb;       // positions of each noeds
     List<vector> structuralForces_memb;          // hydrodynamic forces on all the screen elements
     List<vector> fluidVelocity_memb;             // velocity on the center of all the screen elements
