@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
     Info << "\nStarting time loop\n"
          << endl;
-    fileName output("velocityOnNodes.dat");
+    fileName output("velocityOnNetpanels.dat");
     OFstream os(output);
     while (runTime.loop())
     {
@@ -99,8 +99,9 @@ int main(int argc, char *argv[])
 
         // Info << "The new positions are"<<Nettings.posi()<<endl;
         
-        if (exists("Fh"))
+        if (exists("./constant/Fh"))
         {
+            Info<< "Reading Fh"<<endl;
             IOdictionary structuralFh(
                 IOobject(
                     "Fh",
@@ -109,6 +110,7 @@ int main(int argc, char *argv[])
                     IOobject::READ_IF_PRESENT,
                     IOobject::NO_WRITE));
             Nettings.readForce(structuralFh);
+            // Info << "The new force on elements are \n"<<Nettings.Fhout()<<endl;
         }
         Nettings.updateVelocity(U,mesh);
         Nettings.updatePoroField(porosityField, mesh);

@@ -117,7 +117,6 @@ void Foam::netPanel::addResistance(
     const scalarField V = mesh.V(); // volume of cells
     vectorField &Usource = UEqn.source();
     const vectorField &U = UEqn.psi(); // get the velocity field
-    vector resistance_total(vector::zero);
     vector resistanceForce_total(vector::zero); 
     const vectorField &centres(mesh.C());// get the center of all the cells
     vector resistanceForce_Net(vector::zero);
@@ -138,16 +137,14 @@ void Foam::netPanel::addResistance(
                 vector Fd = 0.5 * (0.04 + F_memb.value()[0] * cos(theta)) * mag(U[cellI]) * (U[cellI]);    //* area
                 vector Fl = 0.5 * F_memb.value()[1] * sin(2 * theta) * mag(U[cellI]) * mag(U[cellI]) * eL; //* area
                 num_cell+=1;
-                resistanceForce_Net+=(Fd + Fl)*1000.0;  // 1000 is the density of fluid          
-                resistance_total+=(Fd + Fl) * V[cellI] / (thickness_memb * 0.95);
+                resistanceForce_Net+=(Fd + Fl)*fluidrho_memb;           
                 Usource[cellI] -= (Fd + Fl) * V[cellI] / (thickness_memb * 0.95); //0.6 is safe factor
             }
         }
-    resistanceForce_Net*=area/(SMALL+num_cell);
+        resistanceForce_Net*=area/(SMALL+num_cell);
+        resistanceForce_total+=resistanceForce_Net;
     }
-    resistanceForce_total+=resistanceForce_Net;
-
-    Info << "The total resistance source term on netting is  " << resistance_total << "\n" << endl;
+    
     Info << "The total resistance force on netting is  " << resistanceForce_total << "\n" << endl;
 }
 
@@ -212,7 +209,8 @@ Foam::netPanel::netPanel(
       Sn_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("Sn"))),
       thickness_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("thickness"))),
       D_memb(netDict_memb.subDict("porousProperties").lookup("D")),
-      F_memb(netDict_memb.subDict("porousProperties").lookup("F"))
+      F_memb(netDict_memb.subDict("porousProperties").lookup("F")),
+      fluidrho_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("fluidDensity")))
 {
     // creat the netpanel object
 }

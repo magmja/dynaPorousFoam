@@ -51,8 +51,9 @@ protected:
         const scalar                 Sn_memb;
         const dimensionedVector      D_memb;  //- porous resistance coefficient F
         const dimensionedVector      F_memb;  // private Member fucntion
-              List<vector>           structuralPositions_memb;
-              List<vector>           structuralElements_memb;
+        const scalar                 fluidrho_memb;
+        List<vector>           structuralPositions_memb;
+        List<vector>           structuralElements_memb;
     //-Private member function    
         vector calcNorm
         (    

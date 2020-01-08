@@ -131,7 +131,7 @@ void Foam::netPanel::addResistance(
     const scalarField V = mesh.V();
     vectorField &Usource = UEqn.source();
     Info << "In addResistance, number of mesh is " << centres.size() << endl;
-    Info << "The structural elements are " << structuralElements_memb << endl;
+    // Info << "The structural elements are " << structuralElements_memb << endl;
     // vector sourceforce = structuralForces_memb;
     forAll(structuralForces_memb, Elementi)
     {
@@ -145,7 +145,7 @@ void Foam::netPanel::addResistance(
             if (
                 isInPorousZone(centres[cellI], structuralPositions_memb, structuralElements_memb[Elementi]))
             {
-                Usource[cellI] -= structuralForces_memb[Elementi] / fluidrho_memb * V[cellI] / (thickness_memb * area + SMALL);
+                Usource[cellI] -= structuralForces_memb[Elementi]* V[cellI] / (thickness_memb * area + SMALL);
             }
         }
     }
@@ -156,7 +156,7 @@ void Foam::netPanel::updatePoroField(
     const fvMesh &mesh) const
 {
     Info << "In updatePoroField, number of mesh is " << (mesh.C()).size() << endl;
-    Info << "The structural elements are " << structuralElements_memb << endl;
+    // Info << "The structural elements are " << structuralElements_memb << endl;
     // step1 set all the cell as 1
     forAll(mesh.C(), cellI)
     {
@@ -207,8 +207,8 @@ void Foam::netPanel::updateVelocity(
                 fluidVelocities[Elemi] = U[cellI];
                 nearestCell = centres[cellI];
                 loops += 1;
-                Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EPcenter << "\n"
-                     << endl;
+                // Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EPcenter << "\n"
+                //      << endl;
             }
         }
         if (maxDistance >= 0.8)
@@ -218,7 +218,7 @@ void Foam::netPanel::updateVelocity(
         }
     }
     fluidVelocity_memb = fluidVelocities; // only assige onece
-    Info << "the velocity on nodes are  " << fluidVelocity_memb << endl;
+    // Info << "the velocity on elements are  " << fluidVelocity_memb << endl;
 }
 
 // this function is based on the nodes position.
