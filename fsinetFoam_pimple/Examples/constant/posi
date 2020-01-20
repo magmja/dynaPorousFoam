@@ -1,0 +1,24 @@
+
+// Input for the nets in openfoam. 
+// Author: Hui Cheng
+// Email: hui.cheng@uis.no 
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      posi;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+{
+numOfPoint   4 ;
+p0 ( 0.0   -0.15	0 );
+p1 ( 0.0	0.15	0 );
+p2 ( 0.0	0.15	-0.3 );
+p3 ( 0.0   -0.15	-0.3 );
+
+}
+// ************************************************************************* //
+
+

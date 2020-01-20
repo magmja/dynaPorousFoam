@@ -1,0 +1,52 @@
+{
+'Environment':
+  {
+    'current':[[0.50,0,0]], # A list of currents
+    'waterDepth':2.7,      # [m] the water depth
+    'waves':'False',       # wave type : will be add in next version
+    'fluidDensity':1000.0, # [kg/m3] fluid density
+  },
+'CageShape':
+  {
+    'shape':'cylindricalNoBottom', # "cylindricalWithBottom", "squaredNoBottom",  "squaredWithBottom", 'conical'
+    'elementOverCir': 16,
+    'elementOverHeight': 3,
+    'cageDiameter':1.0,   # [m] diameter of the fish cage
+    'cageHeight':0.56,    # [m] height of the fish cage
+  },
+'Net':
+  {
+    'nettingType':'square',    # Mesh shape of the net
+    'Sn': 0.302,               # Solidity ratio, Sn
+    'twineDiameter': 2.35e-3,  # [m] Twine diameter of the physical net
+    'meshLength':    16.2e-3,      # [m] Half mesh length
+    'netYoungmodule':40000000, # [Pa]
+    'netRho':1140.0, 	         # [kg/m3] density of the net material
+  },
+'FloatingCollar':
+    {
+    'collarNumber':2, 		      # number of pipe
+    'topRingRadius':10e-3,      # [m] the pipe diameter of the floating pipe
+    'SDR':9,      	            # SDR is the ratio of pipe diameter to wall thickness
+    'floatingRingRho':6e3,
+    'floatingRingYoungModule':160e9,
+    },
+'Weight':
+    {
+    'weightType':'FSIsinkers',   #'allfixed', 	     # 'sinkers', 'sinkerTube+centerweight'
+    # 'bottomRingRadius':0.64e-3,  # [m] the pipe diameter of the sinker tube
+    # 'SDR':9,       # SDR is the ratio of pipe diameter to wall thickness
+    # 'bottomRingRho':7.87e3,
+    # 'bottomRingYoungModule':9e11,
+    'numOfSinkers':16,	           # number of sinker
+    'sinkerWeight':4.48,	   # [N] weight of each sinker
+    },
+  'Mooring':
+  {
+    'mooringType':'hashtag',  	# mooring like a hastag. other option: 'Xshape'
+    'frameLength':10, # [m] length of the fame line, distance between two buoies
+    'bouncyForce':10, # [N] the Maximum bouncy force that the buoy can provide
+    'bouncyLine':10,  # [m] the length of the buoy line, distance between the buoy and plate
+    'mooringLine':20, # [m] the length of the mooring line, distance between the mooring point and plate
+  },
+}

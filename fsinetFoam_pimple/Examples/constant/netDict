@@ -1,0 +1,40 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.3.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      netDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+NetInfo1
+{
+    Sn                             0.302;
+    PorousMediaThickness          0.2; //  should be integral times of half mesh size of the net
+    halfMeshSize                 16.2e-3;  // mesh size of the netting
+    twineDiameter		        2.35e-3; 
+    fluidDensity                1000.0;  // fluid density kg/m3
+    
+}
+
+porousProperties
+{
+    Sn                   0.302;
+    thickness            0.1;
+    D   D [0 -2 0 0 0 0 0] (0       0      0    );
+    F   F [0 -1 0 0 0 0 0] (0.5217  0.1462   0.12748);  // (cd90, Cl0,cl0 )
+    fluidDensity         1000.0;  // fluid density kg/m3
+}
+
+
+
+
+// ************************************************************************* //
