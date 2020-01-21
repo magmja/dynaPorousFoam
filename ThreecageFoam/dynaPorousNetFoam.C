@@ -129,7 +129,8 @@ int main(int argc, char *argv[])
                 IOobject::NO_WRITE
             )
         );
-        porousZones2.readPosi(structuralPositions);     
+        porousZones2.readPosi(structuralPositions);
+
         porousZones2.updatePoroField(porosityField, mesh);
                         
         runTime.write();

@@ -100,8 +100,8 @@ public:
         const fvMesh &mesh) const;
 
     void updateVelocity(
-        const volVectorField &U,
-        const fvMesh &mesh);
+        const List<pointField> &gatheredU,
+        const List<pointField> &gatheredmesh);
 
     scalar porosity() const
     {

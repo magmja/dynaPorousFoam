@@ -41,6 +41,7 @@ Description
 #include "fvOptions.H"
 #include "netPanel.H"
 #include "OFstream.H"
+#include "Pstream.H"
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -96,9 +97,8 @@ int main(int argc, char *argv[])
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE));
         Nettings.readPosi(structuralPositions);
+        Nettings.updatePoroField(porosityField, mesh);
 
-        // Info << "The new positions are"<<Nettings.posi()<<endl;
-        
         if (exists("./constant/Fh"))
         {
             Info<< "Reading Fh"<<endl;
@@ -112,9 +112,21 @@ int main(int argc, char *argv[])
             Nettings.readForce(structuralFh);
             // Info << "The new force on elements are \n"<<Nettings.Fhout()<<endl;
         }
-        Nettings.updateVelocity(U,mesh);
-        Nettings.updatePoroField(porosityField, mesh);
-        
+
+        List<pointField> gatheredU(numberP);
+        gatheredU[Pstream::myProcNo()] = pointField
+                (
+                        U
+                );
+        Pstream::gatherList(gatheredU);
+
+        Info << "Number of processors = " << numberP <<endl;
+        Info << "The gatheredpoints is  = " << gatheredcentres.size() <<endl;
+        Info << "The gatheredU is  = " << gatheredU[0].size()<<endl;
+
+        Nettings.updateVelocity(gatheredU,gatheredcentres);
+
+//        delete(gatheredU);
         os << Nettings.FluidU() << endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
 

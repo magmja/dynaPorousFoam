@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE));
         Nettings.readPosi(structuralPositions);
-        // Info << "The new positions are"<<Nettings.posi()<<endl;
+        Info <<"Before the velocity output, the time is "<<runTime.value()<<tab << "The new positions are"<<Nettings.posi()<<endl;
         
         if (exists("./constant/Fh"))
         {
@@ -153,11 +153,13 @@ int main(int argc, char *argv[])
                     IOobject::READ_IF_PRESENT,
                     IOobject::NO_WRITE));
             Nettings.readForce(structuralFh);
-            // Info << "The new force on elements are \n"<<Nettings.Fhout()<<endl;
+            Info <<"Before the velocity output, the time is "<<runTime.value()<< "The new force on elements are \n"<<Nettings.Fhout()<<endl;
         }
+
         Nettings.updateVelocity(U,mesh);
         Nettings.updatePoroField(porosityField, mesh);
-        os << Nettings.FluidU() << endl;
+        Info<< "Before the velocity output, the time is "<<runTime.value()<<"\n"<<endl;
+        os <<runTime.value() <<tab <<Nettings.FluidU() << endl;
 
 
         runTime.write();
@@ -165,8 +167,6 @@ int main(int argc, char *argv[])
         runTime.printExecutionTime(Info);
     }
 
-    
-    
 
     Info<< "End\n" << endl;
 
