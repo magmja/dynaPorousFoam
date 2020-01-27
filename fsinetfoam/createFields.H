@@ -110,9 +110,6 @@ porosityField.write();
 // generate the mesh center
 scalar numberP = Pstream::nProcs(); //gives the n° of processors
 
-List<pointField> gatheredcentres(numberP);
-gatheredcentres[Pstream::myProcNo()] = pointField
-(
-        mesh.C()
-);
-Pstream::gatherList(gatheredcentres);
+List<pointField> gatheredCentres(numberP);
+gatheredCentres[Pstream::myProcNo()] = pointField(mesh.C());
+Pstream::gatherList(gatheredCentres);

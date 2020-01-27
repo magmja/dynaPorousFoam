@@ -114,17 +114,14 @@ int main(int argc, char *argv[])
         }
 
         List<pointField> gatheredU(numberP);
-        gatheredU[Pstream::myProcNo()] = pointField
-                (
-                        U
-                );
+        gatheredU[Pstream::myProcNo()] = pointField(U);
         Pstream::gatherList(gatheredU);
 
-        Info << "Number of processors = " << numberP <<endl;
-        Info << "The gatheredpoints is  = " << gatheredcentres.size() <<endl;
-        Info << "The gatheredU is  = " << gatheredU[0].size()<<endl;
+//        Info << "Number of processors = " << numberP <<endl;
+//        Info << "The gatheredpoints is  = " << gatheredcentres.size() <<endl;
+//        Info << "The gatheredU is  = " << gatheredU[0].size()<<endl;
 
-        Nettings.updateVelocity(gatheredU,gatheredcentres);
+        Nettings.updateVelocity(gatheredU,gatheredCentres);
 
 //        delete(gatheredU);
         os << Nettings.FluidU() << endl;
