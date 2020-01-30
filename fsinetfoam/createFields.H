@@ -70,19 +70,6 @@ IOdictionary structuralElements(
         IOobject::NO_WRITE));
 Nettings.readSurf(structuralElements);
 
-// if (exists("Fh"))
-// {
-//     IOdictionary structuralFh(
-//         IOobject(
-//             "Fh",
-//             runTime.constant(),
-//             mesh,
-//             IOobject::READ_IF_PRESENT,
-//             IOobject::NO_WRITE));
-//     Nettings.readForce(structuralFh);
-// }
-
-
 
 Info << "Solidity of the structure is " << Nettings.Sn() << "\n"
      << endl;
