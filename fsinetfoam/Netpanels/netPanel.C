@@ -211,8 +211,8 @@ void Foam::netPanel::updateVelocity(
                 }
             }
         }
-        Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EPcenter <<", and the velocity is "<<fluidVelocities[Elemi]<< "\n"
-             << endl;
+//        Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EPcenter <<", and the velocity is "<<fluidVelocities[Elemi]<< "\n"
+//             << endl;
         if (maxDistance >= 0.8)
         {
             Info << "Warnning!! I cannot find the nearest cell to point " << EPcenter << " , because the minimum distance to this point is  " << maxDistance << "\n"

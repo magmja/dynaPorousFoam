@@ -66,8 +66,12 @@ int main(int argc, char *argv[])
 
     Info << "\nStarting time loop\n"
          << endl;
-    fileName output("velocityOnNetpanels.dat");
-    OFstream os(output);
+    OFstream* myOutFilePtr = NULL;
+    if (Pstream::master())
+    {
+        // Open the file
+        myOutFilePtr = new OFstream("velocity_on_elements.txt");
+    }
     while (runTime.loop())
     {
         Info << "Time = " << runTime.timeName() << nl << endl;
@@ -123,9 +127,15 @@ int main(int argc, char *argv[])
 
         Nettings.updateVelocity(gatheredU,gatheredCentres);
 
-//        delete(gatheredU);
-        os << Nettings.FluidU() << endl;
+//        Info<<"velocity on the center of net panels are \n"<<Nettings.FluidU()<<endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
+        if (Pstream::master())
+        {
+            OFstream& myOutFile = *myOutFilePtr;
+            myOutFile
+                    << "The velocities at " << runTime.timeName()<< "s are: "<< Nettings.FluidU()  << endl;
+        }
+
 
         runTime.write();
         Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
