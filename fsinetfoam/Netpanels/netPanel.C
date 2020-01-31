@@ -130,7 +130,7 @@ void Foam::netPanel::addResistance(
     const vectorField &centres(mesh.C());
     const scalarField V = mesh.V();
     vectorField &Usource = UEqn.source();
-    Info << "In addResistance, number of mesh is " << centres.size() << endl;
+//    Info << "In addResistance, number of mesh is " << centres.size() << endl;
     // Info << "The structural elements are " << structuralElements_memb << endl;
     // vector sourceforce = structuralForces_memb;
     forAll(structuralForces_memb, Elementi)
@@ -155,7 +155,7 @@ void Foam::netPanel::updatePoroField(
     volScalarField &porosityField,
     const fvMesh &mesh) const
 {
-    Info << "In updatePoroField, number of mesh is " << (mesh.C()).size() << endl;
+//    Info << "In updatePoroField, number of mesh is " << (mesh.C()).size() << endl;
     // Info << "The structural elements are " << structuralElements_memb << endl;
     // step1 set all the cell as 1
     forAll(mesh.C(), cellI)
@@ -180,7 +180,7 @@ void Foam::netPanel::updatePoroField(
 // ge the velocity at the net panel center
 void Foam::netPanel::updateVelocity(
     const List<pointField> &gatheredU,
-    const List<pointField> &gatheredmesh)
+    const List<pointField> &gathered_mesh)
 {
     List<vector> fluidVelocities(structuralElements_memb.size(), vector::zero);
 //    const vectorField &centres(mesh.C());
@@ -193,20 +193,20 @@ void Foam::netPanel::updateVelocity(
         point p0(structuralPositions_memb[structuralElements_memb[Elemi][0]]);
         point p1(structuralPositions_memb[structuralElements_memb[Elemi][1]]);
         point p2(structuralPositions_memb[structuralElements_memb[Elemi][2]]);
-        point EPcenter = (p0 + p1 + p2) / 3.0;
+        point EP_center = (p0 + p1 + p2) / 3.0;
         maxDistance = 1; //started from 2 m ML_memb
         vector nearestCell(vector::zero);
         scalar loops(0);
-        forAll(gatheredmesh, processorI) // loop through all the cell,
+        forAll(gathered_mesh, processorI) // loop through all the cell,
         {
-            forAll(gatheredmesh[processorI], PointI)
+            forAll(gathered_mesh[processorI], PointI)
             {
-                scalar k1(calcDist(gatheredmesh[processorI][PointI], EPcenter));
+                scalar k1(calcDist(gathered_mesh[processorI][PointI], EP_center));
                 if (k1 < maxDistance)
                 {
                     maxDistance = k1;
                     fluidVelocities[Elemi] = gatheredU[processorI][PointI];
-                    nearestCell = gatheredmesh[processorI][PointI];
+                    nearestCell = gathered_mesh[processorI][PointI];
                     loops += 1;
                 }
             }
@@ -215,7 +215,7 @@ void Foam::netPanel::updateVelocity(
 //             << endl;
         if (maxDistance >= 0.8)
         {
-            Info << "Warnning!! I cannot find the nearest cell to point " << EPcenter << " , because the minimum distance to this point is  " << maxDistance << "\n"
+            Info << "Warnning!!! I cannot find the nearest cell to point " << EP_center << " , because the minimum distance to this point is  " << maxDistance << "\n"
                  << endl;
         }
     }
@@ -234,8 +234,8 @@ void Foam::netPanel::readSurf(
     List<vector> surf(listLength, vector::zero);
     forAll(surf, i)
     {
-        word surfname("e" + Foam::name(i));
-        surf[i] = structuralElements.lookup(surfname);
+        word surf_name("e" + Foam::name(i));
+        surf[i] = structuralElements.lookup(surf_name);
     }
     structuralElements_memb = surf;
     // Info << "The structural elements are " << structuralElements_memb << endl;
@@ -249,21 +249,28 @@ void Foam::netPanel::readPosi(
     List<vector> posi(listLength, vector::zero);
     forAll(posi, i)
     {
-        word pointname("p" + Foam::name(i));
-        posi[i] = structuralPositions.lookup(pointname);
+        word point_name("p" + Foam::name(i));
+        posi[i] = structuralPositions.lookup(point_name);
     }
     structuralPositions_memb = posi;
 }
 
 void Foam::netPanel::readForce(
+    const scalar &time_foam,
     const dictionary &structuralForces)
 {
     scalar listLength(readScalar(structuralForces.lookup("numOfFh")));
+    scalar time_FE(readScalar(structuralForces.lookup("timeInFE")));
+    if (mag(time_FE-time_foam)>10)
+    {
+        Info<<"Warning!!! The difference of time in FE and FV solvers exceeds 10 s!\n" <<endl;
+    }
+
     List<vector> Fh(listLength, vector::zero);
     forAll(Fh, i)
     {
-        word forcename("fh" + Foam::name(i));
-        Fh[i] = structuralForces.lookup(forcename);
+        word force_name("fh" + Foam::name(i));
+        Fh[i] = structuralForces.lookup(force_name);
     }
     structuralForces_memb = Fh;
 }

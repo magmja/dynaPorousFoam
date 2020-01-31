@@ -133,7 +133,9 @@ public:
 
     void readPosi(const dictionary &structuralPositions);
     void readSurf(const dictionary &structuralElements);
-    void readForce(const dictionary &structuralForces_memb);
+    void readForce(
+            const scalar &time_foam,
+            const dictionary &structuralForces_memb);
 
     // Friend Functions
 

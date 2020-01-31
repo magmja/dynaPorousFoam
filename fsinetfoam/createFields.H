@@ -37,10 +37,6 @@ autoPtr<incompressible::turbulenceModel> turbulence(
 
 volScalarField nu(laminarTransport.nu());
 
-Info << "Before read netdict "
-     << "\n"
-     << endl;
-//
 //- the net dictionary
 IOdictionary netDict(
     IOobject(
