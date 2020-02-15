@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
                     IOobject::READ_IF_PRESENT,
                     IOobject::NO_WRITE));
             Nettings.readForce(runTime.value(),structuralFh);
+            Info<< "Finish reading Fh"<<endl;
             // Info << "The new force on elements are \n"<<Nettings.Fhout()<<endl;
         }
 

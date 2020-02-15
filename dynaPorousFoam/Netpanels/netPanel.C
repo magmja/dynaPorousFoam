@@ -144,7 +144,7 @@ void Foam::netPanel::addResistance(
         resistanceForce_Net*=area/(SMALL+num_cell);
         resistanceForce_total+=resistanceForce_Net;
     }
-    
+
     Info << "The total resistance force on netting is  " << resistanceForce_total << "\n" << endl;
 }
 
@@ -210,9 +210,10 @@ Foam::netPanel::netPanel(
       thickness_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("thickness"))),
       D_memb(netDict_memb.subDict("porousProperties").lookup("D")),
       F_memb(netDict_memb.subDict("porousProperties").lookup("F")),
-      fluidrho_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("fluidDensity")))
+      fluidrho_memb(readScalar(netDict_memb.subDict("porousProperties").lookup("fluidDensity"))),
+      dw_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("twineDiameter")))
 {
-    // creat the netpanel object
+//    totalDrag_memb=List<vector>
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

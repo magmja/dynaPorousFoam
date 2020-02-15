@@ -49,11 +49,13 @@ protected:
         const dictionary             netDict_memb;
         const scalar                 thickness_memb;  // thickness of the net panel
         const scalar                 Sn_memb;
-        const dimensionedVector      D_memb;  //- porous resistance coefficient F
-        const dimensionedVector      F_memb;  // private Member fucntion
+        const dimensionedVector      D_memb;
+        const dimensionedVector      F_memb;
         const scalar                 fluidrho_memb;
+        const scalar                 dw_memb;        // diameter of the twine in netting
         List<vector>           structuralPositions_memb;
         List<vector>           structuralElements_memb;
+        List<vector>           totalDrag_memb;
     //-Private member function    
         vector calcNorm
         (    
@@ -123,7 +125,7 @@ public:
          )const;
     scalar porosity() const
         {
-            return Sn_memb;
+        return 1-Sn_memb*dw_memb/thickness_memb;
         };
 
     List<vector>  posi() const
