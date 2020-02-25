@@ -1,3 +1,0 @@
-fsinetFoam.C
-
-EXE = $(FOAM_USER_APPBIN)/fsinetPimpleFoam
