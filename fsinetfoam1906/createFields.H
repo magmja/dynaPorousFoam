@@ -96,3 +96,17 @@ scalar numberP = Pstream::nProcs(); //gives the n° of processors
 List<pointField> gatheredCentres(numberP);
 gatheredCentres[Pstream::myProcNo()] = pointField(mesh.C());
 Pstream::gatherList(gatheredCentres);
+
+// Find the minimum mesh
+scalar minMeshV=1;
+
+forAll(mesh.V(),meshI)
+{
+if (mesh.V()[meshI]<minMeshV)
+{
+minMeshV=mesh.V()[meshI];
+}
+}
+
+const scalar thresholdLength=Foam::pow(minMeshV,1/3.0);
+Info<< "The length of mesh size ="<<thresholdLength<< endl;

@@ -101,7 +101,8 @@ public:
 
     void updateVelocity(
         const List<pointField> &gatheredU,
-        const List<pointField> &gatheredmesh);
+        const List<pointField> &gatheredmesh,
+        const scalar &thresholdLength);
 
     scalar porosity() const
     {

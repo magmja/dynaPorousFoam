@@ -93,51 +93,52 @@ int main(int argc, char *argv[])
 
         // read from outside
         // need to confirm ... might be wrong data structure
+        Info<< "\nStart fsi function..."<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         IOdictionary structuralPositions(
-            IOobject(
-                "posi",
-                runTime.constant(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::NO_WRITE));
+                IOobject(
+                        "posi",
+                        runTime.constant(),
+                        mesh,
+                        IOobject::MUST_READ,
+                        IOobject::NO_WRITE));
         Nettings.readPosi(structuralPositions);
+        Info<< "\n Start updatePoroField"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         Nettings.updatePoroField(porosityField, mesh);
-
+        Info<< " Finish updatePoroField"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         if (exists("./constant/Fh"))
         {
-            Info<< "Reading Fh"<<endl;
+//            Info<< "Reading Fh"<<"  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
             IOdictionary structuralFh(
-                IOobject(
-                    "Fh",
-                    runTime.constant(),
-                    mesh,
-                    IOobject::READ_IF_PRESENT,
-                    IOobject::NO_WRITE));
+                    IOobject(
+                            "Fh",
+                            runTime.constant(),
+                            mesh,
+                            IOobject::READ_IF_PRESENT,
+                            IOobject::NO_WRITE));
             Nettings.readForce(runTime.value(),structuralFh);
-            Info<< "Finish reading Fh"<<endl;
-            // Info << "The new force on elements are \n"<<Nettings.Fhout()<<endl;
+//            Info<< "Finish reading Fh"<<"  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         }
 
         List<pointField> gatheredU(numberP);
         gatheredU[Pstream::myProcNo()] = pointField(U);
         Pstream::gatherList(gatheredU);
 
-//        Info << "Number of processors = " << numberP <<endl;
-//        Info << "The gatheredpoints is  = " << gatheredcentres.size() <<endl;
-//        Info << "The gatheredU is  = " << gatheredU[0].size()<<endl;
-
-        Nettings.updateVelocity(gatheredU,gatheredCentres);
+        Info<< "\n Start updateVelocity velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
+        Nettings.updateVelocity(gatheredU,gatheredCentres,thresholdLength);
+        Info<< " Finish updateVelocity velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
 //        Info<<"velocity on the center of net panels are \n"<<Nettings.FluidU()<<endl;
         // write the Nettings.fluidVelocity(); to a extrinal files
+//        Info<< "Start writing velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         if (Pstream::master())
         {
             OFstream& myOutFile = *myOutFilePtr;
             myOutFile
                     << "The velocities at " << runTime.timeName()<< "s are: "<< Nettings.FluidU()  << endl;
         }
+//        Info<< "Finish writing velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
-
+        Info<< "Finish fsi function..."<< "  ClockTime = " << runTime.elapsedClockTime() << " s\n "<<endl;
         runTime.write();
         Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
              << "  ClockTime = " << runTime.elapsedClockTime() << " s"

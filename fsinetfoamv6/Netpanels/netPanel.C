@@ -200,6 +200,10 @@ void Foam::netPanel::updateVelocity(
         scalar loops(0);
         forAll(gathered_mesh, processorI) // loop through all the cell,
         {
+            if (maxDistance<thresholdLength)
+            {
+                break;
+            }
             forAll(gathered_mesh[processorI], PointI)
             {
                 scalar k1(calcDist(gathered_mesh[processorI][PointI], EP_center));
@@ -215,10 +219,7 @@ void Foam::netPanel::updateVelocity(
                     break;
                 }
             }
-            if (maxDistance<thresholdLength)
-            {
-                break;
-            }
+
         }
 //        Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EP_center <<", and the velocity is "<<fluidVelocities[Elemi]<< "\n"
 //             << endl;
