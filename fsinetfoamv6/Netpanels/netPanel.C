@@ -180,7 +180,8 @@ void Foam::netPanel::updatePoroField(
 // ge the velocity at the net panel center
 void Foam::netPanel::updateVelocity(
     const List<pointField> &gatheredU,
-    const List<pointField> &gathered_mesh)
+    const List<pointField> &gathered_mesh,
+    const scalar &thresholdLength)
 {
     List<vector> fluidVelocities(structuralElements_memb.size(), vector::zero);
 //    const vectorField &centres(mesh.C());
@@ -194,7 +195,7 @@ void Foam::netPanel::updateVelocity(
         point p1(structuralPositions_memb[structuralElements_memb[Elemi][1]]);
         point p2(structuralPositions_memb[structuralElements_memb[Elemi][2]]);
         point EP_center = (p0 + p1 + p2) / 3.0;
-        maxDistance = 1; //started from 2 m ML_memb
+        maxDistance = thresholdLength*10; //started from 2 m ML_memb
         vector nearestCell(vector::zero);
         scalar loops(0);
         forAll(gathered_mesh, processorI) // loop through all the cell,
@@ -209,9 +210,17 @@ void Foam::netPanel::updateVelocity(
                     nearestCell = gathered_mesh[processorI][PointI];
                     loops += 1;
                 }
+                if (maxDistance<thresholdLength)
+                {
+                    break;
+                }
+            }
+            if (maxDistance<thresholdLength)
+            {
+                break;
             }
         }
-//        Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EPcenter <<", and the velocity is "<<fluidVelocities[Elemi]<< "\n"
+//        Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EP_center <<", and the velocity is "<<fluidVelocities[Elemi]<< "\n"
 //             << endl;
         if (maxDistance >= 0.8)
         {
