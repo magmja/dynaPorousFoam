@@ -181,13 +181,12 @@ void Foam::netPanel::updatePoroField(
 void Foam::netPanel::updateVelocity(
     const List<pointField> &gatheredU,
     const List<pointField> &gathered_mesh,
-    const scalar &thresholdLength)
+    const scalar &thresholdLength,
+    const scalar &time_foam)
 {
     List<vector> fluidVelocities(structuralElements_memb.size(), vector::zero);
-//    const vectorField &centres(mesh.C());
-//    const label &nCells = mesh.nCells();
-//    Info << "In updateVelocity, number of mesh is " << nCells << endl;
-    // Info << "The structural elements are " << structuralElements_memb << endl;
+    Info<< "ExecutionTime = "<<time_foam/1.0<<endl;
+// todo if the time_foam is 1 2 3 .. integral, then run the undate velocity.
     scalar maxDistance(1);                 //started from 2 m ML_memb
     forAll(structuralElements_memb, Elemi) // loop through all the structural emlements
     {

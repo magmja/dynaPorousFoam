@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
         Pstream::gatherList(gatheredU);
 
         Info<< "\n Start updateVelocity velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-        Nettings.updateVelocity(gatheredU,gatheredCentres,thresholdLength);
+        Nettings.updateVelocity(gatheredU,gatheredCentres,thresholdLength,runTime.value());
         Info<< " Finish updateVelocity velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
 //        Info<<"velocity on the center of net panels are \n"<<Nettings.FluidU()<<endl;
