@@ -51,6 +51,7 @@ protected:
     const scalar ML_memb;        // length between neighbor knots
     const scalar dw_memb;        // diameter of the twine in netting
     const scalar fluidrho_memb;
+    const scalar updateInterval_memb; //  update interval for velocity to speed the simulation
 
     List<vector> structuralElements_memb;        // screen model of netting
     List<vector> structuralPositions_memb;       // positions of each noeds

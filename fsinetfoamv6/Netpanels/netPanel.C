@@ -111,7 +111,8 @@ Foam::netPanel::netPanel(
       thickness_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("PorousMediaThickness"))),
       ML_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("halfMeshSize"))),
       fluidrho_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("fluidDensity"))),
-      dw_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("twineDiameter")))
+      dw_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("twineDiameter"))),
+      updateInterval_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("velocityUpdateInterval")))
 {
     // creat the netpanel object
 }
@@ -185,7 +186,10 @@ void Foam::netPanel::updateVelocity(
     const scalar &time_foam)
 {
     List<vector> fluidVelocities(structuralElements_memb.size(), vector::zero);
-    if(time_foam == int(time_foam))
+    int test1=time_foam/updateInterval_memb+SMALL;// It has add SMALL. No reason... otherwise it cannot work.
+    float test2=time_foam/updateInterval_memb;
+
+    if(float(test1)==float(test2) or time_foam<0.1)
     {
         Info<< " Update velocity at  = "<<time_foam <<endl;
 
@@ -233,6 +237,7 @@ void Foam::netPanel::updateVelocity(
         fluidVelocity_memb = fluidVelocities; // only assige onece
         // Info << "the velocity on elements are  " << fluidVelocity_memb << endl;
     }
+
 }
 
 
