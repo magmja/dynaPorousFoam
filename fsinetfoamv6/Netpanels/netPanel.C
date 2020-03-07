@@ -185,51 +185,54 @@ void Foam::netPanel::updateVelocity(
     const scalar &time_foam)
 {
     List<vector> fluidVelocities(structuralElements_memb.size(), vector::zero);
-    Info<< "ExecutionTime = "<<time_foam/1.0<<endl;
-// todo if the time_foam is 1 2 3 .. integral, then run the undate velocity.
-    scalar maxDistance(1);                 //started from 2 m ML_memb
-    forAll(structuralElements_memb, Elemi) // loop through all the structural emlements
+    if(time_foam == int(time_foam))
     {
-        point p0(structuralPositions_memb[structuralElements_memb[Elemi][0]]);
-        point p1(structuralPositions_memb[structuralElements_memb[Elemi][1]]);
-        point p2(structuralPositions_memb[structuralElements_memb[Elemi][2]]);
-        point EP_center = (p0 + p1 + p2) / 3.0;
-        maxDistance = thresholdLength*10; //started from 2 m ML_memb
-        vector nearestCell(vector::zero);
-        scalar loops(0);
-        forAll(gathered_mesh, processorI) // loop through all the cell,
+        Info<< " Update velocity at  = "<<time_foam <<endl;
+
+        scalar maxDistance(1);                 //started from 2 m ML_memb
+        forAll(structuralElements_memb, Elemi) // loop through all the structural emlements
         {
-            if (maxDistance<thresholdLength)
+            point p0(structuralPositions_memb[structuralElements_memb[Elemi][0]]);
+            point p1(structuralPositions_memb[structuralElements_memb[Elemi][1]]);
+            point p2(structuralPositions_memb[structuralElements_memb[Elemi][2]]);
+            point EP_center = (p0 + p1 + p2) / 3.0;
+            maxDistance = thresholdLength*10; //started from 2 m ML_memb
+            vector nearestCell(vector::zero);
+            scalar loops(0);
+            forAll(gathered_mesh, processorI) // loop through all the cell,
             {
-                break;
-            }
-            forAll(gathered_mesh[processorI], PointI)
-            {
-                scalar k1(calcDist(gathered_mesh[processorI][PointI], EP_center));
-                if (k1 < maxDistance)
-                {
-                    maxDistance = k1;
-                    fluidVelocities[Elemi] = gatheredU[processorI][PointI];
-                    nearestCell = gathered_mesh[processorI][PointI];
-                    loops += 1;
-                }
                 if (maxDistance<thresholdLength)
                 {
                     break;
                 }
-            }
+                forAll(gathered_mesh[processorI], PointI)
+                {
+                    scalar k1(calcDist(gathered_mesh[processorI][PointI], EP_center));
+                    if (k1 < maxDistance)
+                    {
+                        maxDistance = k1;
+                        fluidVelocities[Elemi] = gatheredU[processorI][PointI];
+                        nearestCell = gathered_mesh[processorI][PointI];
+                        loops += 1;
+                    }
+                    if (maxDistance<thresholdLength)
+                    {
+                        break;
+                    }
+                }
 
+            }
+//            Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EP_center <<", and the velocity is "<<fluidVelocities[Elemi]<< "\n"
+//                 << endl;
+            if (maxDistance >= 0.8)
+            {
+                Info << "Warnning!!! I cannot find the nearest cell to point " << EP_center << " , because the minimum distance to this point is  " << maxDistance << "\n"
+                     << endl;
+            }
         }
-//        Info << "After " << loops << " times of loop, the nearest cell is " << nearestCell << "to point " << EP_center <<", and the velocity is "<<fluidVelocities[Elemi]<< "\n"
-//             << endl;
-        if (maxDistance >= 0.8)
-        {
-            Info << "Warnning!!! I cannot find the nearest cell to point " << EP_center << " , because the minimum distance to this point is  " << maxDistance << "\n"
-                 << endl;
-        }
+        fluidVelocity_memb = fluidVelocities; // only assige onece
+        // Info << "the velocity on elements are  " << fluidVelocity_memb << endl;
     }
-    fluidVelocity_memb = fluidVelocities; // only assige onece
-    // Info << "the velocity on elements are  " << fluidVelocity_memb << endl;
 }
 
 
