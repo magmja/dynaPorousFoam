@@ -116,4 +116,4 @@ forAll(mesh.V(),meshI)
 }
 
 const scalar thresholdLength=Foam::pow(minMeshV,1/3.0);
-Info<< "The length of mesh size ="<<thresholdLength<< endl;
+Info<< "The length of minimum mesh size ="<<thresholdLength<< endl;

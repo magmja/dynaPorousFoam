@@ -89,20 +89,22 @@ int main(int argc, char *argv[])
         // read from outside
         // need to confirm ... might be wrong data structure
         Info<< "\nStart fsi function..."<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-        IOdictionary structuralPositions(
-                IOobject(
-                        "posi",
-                        runTime.constant(),
-                        mesh,
-                        IOobject::MUST_READ,
-                        IOobject::NO_WRITE));
-        Nettings.readPosi(structuralPositions);
+        if (exists("./constant/position_flag")) {
+            IOdictionary structuralPositions(
+                    IOobject(
+                            "posi",
+                            runTime.constant(),
+                            mesh,
+                            IOobject::READ_IF_PRESENT,
+                            IOobject::NO_WRITE));
+            Nettings.readPosi(structuralPositions);
+        }
         Info<< "\n Start updatePoroField"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         Nettings.updatePoroField(porosityField, mesh);
         Info<< " Finish updatePoroField"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-        if (exists("./constant/Fh"))
+
+        if (exists("./constant/fh_flag"))
         {
-//            Info<< "Reading Fh"<<"  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
             IOdictionary structuralFh(
                     IOobject(
                             "Fh",
@@ -111,7 +113,6 @@ int main(int argc, char *argv[])
                             IOobject::READ_IF_PRESENT,
                             IOobject::NO_WRITE));
             Nettings.readForce(runTime.value(),structuralFh);
-//            Info<< "Finish reading Fh"<<"  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         }
 
         List<pointField> gatheredU(numberP);
@@ -121,15 +122,13 @@ int main(int argc, char *argv[])
         Info<< "\n Start updateVelocity velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         Nettings.updateVelocity(gatheredU,gatheredCentres,thresholdLength,runTime.value());
         Info<< " Finish updateVelocity velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
+        // writing the velocity.
 
-//        Info<<"velocity on the center of net panels are \n"<<Nettings.FluidU()<<endl;
-        // write the Nettings.fluidVelocity(); to a extrinal files
-//        Info<< "Start writing velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         if (Pstream::master())
         {
             OFstream& myOutFile = *myOutFilePtr;
             myOutFile
-                    << "The velocities at " << runTime.timeName()<< "s are: "<< Nettings.FluidU()  << endl;
+                    << "The velocities at " << runTime.timeName()<< " s are: "<< Nettings.FluidU()  << endl;
         }
 //        Info<< "Finish writing velocity"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
