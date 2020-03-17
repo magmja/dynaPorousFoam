@@ -186,10 +186,19 @@ void Foam::netPanel::updateVelocity(
     const scalar &time_foam)
 {
     List<vector> fluidVelocities(structuralElements_memb.size(), vector::zero);
-    int test1=time_foam/updateInterval_memb+SMALL;// It has add SMALL. No reason... otherwise it cannot work.
-    float test2=time_foam/updateInterval_memb;
+    int test1=1;
+    float test2=2;
+    if (updateInterval_memb==0)
+    {
+        test2=1;
+    }
+    else
+    {
+        test1=time_foam/updateInterval_memb+SMALL;// It has add SMALL. No reason... otherwise it cannot work.
+        test2=time_foam/updateInterval_memb;
+    }
 
-    if(float(test1)==float(test2) or time_foam<0.1)
+    if(float(test1)==float(test2) or time_foam<0.1 or updateInterval_memb==0)
     {
         Info<< " Update velocity at  = "<<time_foam <<endl;
 

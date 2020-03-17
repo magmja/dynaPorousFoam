@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
         // need to confirm ... might be wrong data structure
         Info<< "\nStart fsi function..."<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         if (exists("./constant/position_flag")) {
+            sleep(0.1);
             IOdictionary structuralPositions(
                     IOobject(
                             "posi",
@@ -103,8 +104,8 @@ int main(int argc, char *argv[])
         Nettings.updatePoroField(porosityField, mesh);
         Info<< " Finish updatePoroField"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
-        if (exists("./constant/fh_flag"))
-        {
+        if (exists("./constant/fh_flag")){
+            sleep(0.1);
             IOdictionary structuralFh(
                     IOobject(
                             "Fh",
