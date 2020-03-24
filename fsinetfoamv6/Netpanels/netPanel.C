@@ -73,7 +73,7 @@ bool Foam::netPanel::isInPorousZone(
         d1 = (mag(pointI - x));
         d2 = (mag(pointIII - x));
         dis2line = (mag(calcArea(pointI, pointIII, x) / line2));
-        if (dis2line <= thickness_memb / 2 and max(d1, d2) <= (thickness_memb / 2 + line2)) {
+        if (dis2line <= thickness_memb * 0.25*ropeEnhance_memb and max(d1, d2) <= (thickness_memb / 2 + line2)) {
             result = true;
         }
 
@@ -81,7 +81,7 @@ bool Foam::netPanel::isInPorousZone(
         d1 = (mag(pointII - x));
         d2 = (mag(pointIII - x));
         dis2line = (mag(calcArea(pointII, pointIII, x) / line3));
-        if (dis2line <= thickness_memb / 2 and max(d1, d2) <= (thickness_memb / 2 + line3)) {
+        if (dis2line <= thickness_memb * 0.25*ropeEnhance_memb and max(d1, d2) <= (thickness_memb / 2 + line3)) {
             result = true;
         }
 
@@ -91,7 +91,7 @@ bool Foam::netPanel::isInPorousZone(
             d1 = (mag(pointI - x));
             d2 = (mag(pointIII - x));
             dis2line = (mag(calcArea(pointI, pointIII, x) / line2));
-            if (dis2line <= thickness_memb / 2 and max(d1, d2) <= (thickness_memb / 2 + line2)) {
+            if (dis2line <= thickness_memb * 0.25*ropeEnhance_memb and max(d1, d2) <= (thickness_memb / 2 + line2)) {
                 result = true;
             }
 
@@ -99,7 +99,7 @@ bool Foam::netPanel::isInPorousZone(
             d1 = (mag(pointI - x));
             d2 = (mag(pointII - x));
             dis2line = (mag(calcArea(pointI, pointII, x) / line1));
-            if (dis2line <= thickness_memb / 2 and max(d1, d2) <= (thickness_memb / 2 + line1)) {
+            if (dis2line <= thickness_memb * 0.25*ropeEnhance_memb and max(d1, d2) <= (thickness_memb / 2 + line1)) {
                 result = true;
             }
 
@@ -108,7 +108,7 @@ bool Foam::netPanel::isInPorousZone(
             d1 = (mag(pointII - x));
             d2 = (mag(pointIII - x));
             dis2line = (mag(calcArea(pointII, pointIII, x) / line3));
-            if (dis2line <= thickness_memb / 2 and max(d1, d2) <= (thickness_memb / 2 + line3)) {
+            if (dis2line <= thickness_memb * 0.25*ropeEnhance_memb and max(d1, d2) <= (thickness_memb / 2 + line3)) {
                 result = true;
             }
 
@@ -116,7 +116,7 @@ bool Foam::netPanel::isInPorousZone(
             d1 = (mag(pointI - x));
             d2 = (mag(pointII - x));
             dis2line = (mag(calcArea(pointI, pointII, x) / line1));
-            if (dis2line <= thickness_memb / 2 and max(d1, d2) <= (thickness_memb / 2 + line1)) {
+            if (dis2line <= thickness_memb * 0.25* ropeEnhance_memb and max(d1, d2) <= (thickness_memb / 2 + line1)) {
                 result = true;
             }
 
@@ -199,7 +199,9 @@ Foam::netPanel::netPanel(
         ML_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("halfMeshSize"))),
         fluidrho_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("fluidDensity"))),
         dw_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("twineDiameter"))),
-        updateInterval_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("velocityUpdateInterval"))) {
+        updateInterval_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("velocityUpdateInterval"))),
+        ropeEnhance_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("ropeEnhance")))
+        {
     // creat the netpanel object
 }
 
