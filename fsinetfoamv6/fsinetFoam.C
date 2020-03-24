@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
 
         laminarTransport.correct();
         turbulence->correct();
+
         // read from outside
         // need to confirm ... might be wrong data structure
         Info<< "\nStart fsi function..."<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;

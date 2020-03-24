@@ -79,7 +79,6 @@ protected:
 
     bool isInPorousZone(
         const point &x,
-        const List<vector> &structuralPositions,
         const vector &structuralElementi) const;
 
 
