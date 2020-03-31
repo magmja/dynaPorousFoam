@@ -27,7 +27,17 @@ Foam::scalar Foam::netPanel::calcArea(
     return 0.5 * mag(a ^ b);
 }
 
-
+Foam::scalar Foam::netPanel::calcDistanceFromPoint2Panel(
+        const point &x,
+        const vector &structuralElementi) const {
+    const point pointI = structuralPositions_memb[structuralElementi[0]];
+    const point pointII = structuralPositions_memb[structuralElementi[1]];
+    const point pointIII = structuralPositions_memb[structuralElementi[2]];
+    vector panelNorm = calcNorm(pointI, pointII, pointIII); // a unit vector to indicate the normal
+    scalar dis(mag((x - pointI) & panelNorm));
+    Info << "The distance from point to net panel is "<< dis << " m." << endl;
+    return dis;
+}
 bool Foam::netPanel::isInPorousZone(
         const point &x,   // a probe point [x,y,z]
         const vector &structuralElementi   // one panel element [p1,p2,p3]
@@ -123,35 +133,6 @@ bool Foam::netPanel::isInPorousZone(
         }
     }
 
-//        //based on I II
-//        scalar line1(mag(pointI-x));
-//        scalar line2(mag(pointII-x));
-//        scalar line3(mag(pointI-pointII));
-//        scalar dis2line3(mag(calcArea(pointI, pointII, x)/line3));
-//        if (dis2line3<=thickness_memb / 2 and (line1+line2)<=(thickness_memb/2+line3))
-//        {
-//            result = true;
-//        }
-//        // based on I III
-//        line1=(mag(pointI-x));
-//        line2=(mag(pointIII-x));
-//        line3=(mag(pointI-pointIII));
-//        dis2line3=(mag(calcArea(pointI, pointIII, x)/line3));
-//        if (dis2line3<=thickness_memb / 2 and (line1+line2)<=(thickness_memb/2+line3))
-//        {
-//            result = true;
-//        }
-//
-//        // based on II III
-//        line1=(mag(pointII-x));
-//        line2=(mag(pointIII-x));
-//        line3=(mag(pointII-pointIII));
-//        dis2line3=(mag(calcArea(pointII, pointIII, x)/line3));
-//        if (dis2line3<=thickness_memb / 2 and (line1+line2)<=(thickness_memb/2+line3))
-//        {
-//            result = true;
-//        }
-//
     return result;
 }
 
@@ -200,7 +181,8 @@ Foam::netPanel::netPanel(
         fluidrho_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("fluidDensity"))),
         dw_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("twineDiameter"))),
         updateInterval_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("velocityUpdateInterval"))),
-        ropeEnhance_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("ropeEnhance")))
+        ropeEnhance_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("ropeEnhance"))),
+        netSharp_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("netSharpWeight")))
         {
     // creat the netpanel object
 }
@@ -213,13 +195,17 @@ Foam::netPanel::~netPanel() {
 
 void Foam::netPanel::addResistance(
         fvVectorMatrix &UEqn,
-        const fvMesh &mesh) const {
+        const fvMesh &mesh) const
+{
     const vectorField &centres(mesh.C());
     const scalarField V = mesh.V();
+
     vectorField &Usource = UEqn.source();
 //    Info << "In addResistance, number of mesh is " << centres.size() << endl;
     // Info << "The structural elements are " << structuralElements_memb << endl;
     // vector sourceforce = structuralForces_memb;
+//    Info << "The structural elements are " << structuralElements_memb << endl;
+//    Info << "The structuralForces_memb  are " << structuralForces_memb << endl;
     forAll(structuralForces_memb, Elementi)
     {
         point p0(structuralPositions_memb[structuralElements_memb[Elementi][0]]);
@@ -229,10 +215,14 @@ void Foam::netPanel::addResistance(
 
         forAll(centres, cellI)
         {
-            if (
-                    isInPorousZone(centres[cellI], structuralElements_memb[Elementi])) {
+            if (isInPorousZone(centres[cellI], structuralElements_memb[Elementi]))
+            {
+                scalar distance(calcDistanceFromPoint2Panel(centres[cellI], structuralElements_memb[Elementi]));
+                scalar weight(2.0/thickness_memb-4.0/pow(thickness_memb,2)*distance);
+                if (netSharp_memb==0){weight=1;}
+
                 Usource[cellI] -=
-                        structuralForces_memb[Elementi] * V[cellI] / fluidrho_memb / (thickness_memb * area + SMALL);
+                        weight*structuralForces_memb[Elementi] * V[cellI] / fluidrho_memb / (thickness_memb * area + SMALL);
                 // here we assume the porous media volume is thickness_memb*area which could be smaller than the actual selected volume.
 
             }
@@ -280,7 +270,7 @@ void Foam::netPanel::updateVelocity(
         test2 = time_foam / updateInterval_memb;
     }
 
-    if (float(test1) == float(test2) or time_foam < 0.1 or updateInterval_memb == 0) {
+    if (float(test1) == float(test2) or time_foam < 0.1 ) {
         Info << " Update velocity at  = " << time_foam << endl;
 
         scalar maxDistance(1);                 //started from 2 m ML_memb
