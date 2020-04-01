@@ -35,7 +35,7 @@ Foam::scalar Foam::netPanel::calcDistanceFromPoint2Panel(
     const point pointIII = structuralPositions_memb[structuralElementi[2]];
     vector panelNorm = calcNorm(pointI, pointII, pointIII); // a unit vector to indicate the normal
     scalar dis(mag((x - pointI) & panelNorm));
-    Info << "The distance from point to net panel is "<< dis << " m." << endl;
+//    Info << "The distance from point to net panel is "<< dis << " m." << endl;
     return dis;
 }
 bool Foam::netPanel::isInPorousZone(
@@ -181,8 +181,8 @@ Foam::netPanel::netPanel(
         fluidrho_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("fluidDensity"))),
         dw_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("twineDiameter"))),
         updateInterval_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("velocityUpdateInterval"))),
-        ropeEnhance_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("ropeEnhance"))),
-        netSharp_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("netSharpWeight")))
+        ropeEnhance_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("ropeEnhance")))
+//        netSharp_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("netSharpWeight")))
         {
     // creat the netpanel object
 }
@@ -217,12 +217,12 @@ void Foam::netPanel::addResistance(
         {
             if (isInPorousZone(centres[cellI], structuralElements_memb[Elementi]))
             {
-                scalar distance(calcDistanceFromPoint2Panel(centres[cellI], structuralElements_memb[Elementi]));
-                scalar weight(2.0/thickness_memb-4.0/pow(thickness_memb,2)*distance);
-                if (netSharp_memb==0){weight=1;}
+//                scalar distance(calcDistanceFromPoint2Panel(centres[cellI], structuralElements_memb[Elementi]));
+//                scalar weight(2.0/thickness_memb-4.0/pow(thickness_memb,2)*distance);
+//                if (netSharp_memb==0){weight=1;}
 
                 Usource[cellI] -=
-                        weight*structuralForces_memb[Elementi] * V[cellI] / fluidrho_memb / (thickness_memb * area + SMALL);
+                        structuralForces_memb[Elementi] * V[cellI] / fluidrho_memb / (thickness_memb * area + SMALL);
                 // here we assume the porous media volume is thickness_memb*area which could be smaller than the actual selected volume.
 
             }

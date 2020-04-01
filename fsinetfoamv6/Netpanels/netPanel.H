@@ -56,7 +56,6 @@ protected:
                                         // 1: the thickness of twine is the same with thickness of net;
                                         // 2: enhanced, the thickness of twine is twice the thickness of net.
 
-    const scalar netSharp_memb;     // 0: no enhance, might be a hole;
     List<vector> structuralElements_memb;        // screen model of netting
     List<vector> structuralPositions_memb;       // positions of each noeds
     List<vector> structuralForces_memb;          // hydrodynamic forces on all the screen elements
