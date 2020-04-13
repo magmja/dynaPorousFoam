@@ -181,10 +181,13 @@ Foam::netPanel::netPanel(
         fluidrho_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("fluidDensity"))),
         dw_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("twineDiameter"))),
         updateInterval_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("velocityUpdateInterval"))),
-        ropeEnhance_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("ropeEnhance")))
-//        netSharp_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("netSharpWeight")))
+        ropeEnhance_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("ropeEnhance"))),
+        velocityCorrect_memb(readScalar(netDict_memb.subDict("NetInfo1").lookup("velocityCorrector")))
         {
     // creat the netpanel object
+
+    const vector probeCorrection_memb(netDict_memb.subDict("NetInfo1").lookup("velocityProbeCorrection"));
+    Info << "A net panel object is created from " << netDict << endl;
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -279,7 +282,7 @@ void Foam::netPanel::updateVelocity(
             point p0(structuralPositions_memb[structuralElements_memb[Elemi][0]]);
             point p1(structuralPositions_memb[structuralElements_memb[Elemi][1]]);
             point p2(structuralPositions_memb[structuralElements_memb[Elemi][2]]);
-            point EP_center = (p0 + p1 + p2) / 3.0;
+            point EP_center = (p0 + p1 + p2) / 3.0 + probeCorrection_memb;
             maxDistance = thresholdLength * 10; //started from 2 m ML_memb
             vector nearestCell(vector::zero);
             scalar loops(0);
@@ -293,7 +296,7 @@ void Foam::netPanel::updateVelocity(
                     scalar k1(calcDist(gathered_mesh[processorI][PointI], EP_center));
                     if (k1 < maxDistance) {
                         maxDistance = k1;
-                        fluidVelocities[Elemi] = gatheredU[processorI][PointI];
+                        fluidVelocities[Elemi] = velocityCorrect_memb*gatheredU[processorI][PointI];
                         nearestCell = gathered_mesh[processorI][PointI];
                         loops += 1;
                     }

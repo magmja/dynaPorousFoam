@@ -52,6 +52,8 @@ protected:
     const scalar dw_memb;        // diameter of the twine in netting
     const scalar fluidrho_memb;
     const scalar updateInterval_memb; //  update interval for velocity to speed the simulation
+    const vector probeCorrection_memb;
+    const scalar velocityCorrect_memb;  // 1: no correction; 1.5: the velocity times 1.5.
     const scalar ropeEnhance_memb;     // 0: no enhance, might be a hole;
                                         // 1: the thickness of twine is the same with thickness of net;
                                         // 2: enhanced, the thickness of twine is twice the thickness of net.
