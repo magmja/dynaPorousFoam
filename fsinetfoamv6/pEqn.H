@@ -10,7 +10,6 @@ surfaceScalarField phiHbyA
 MRF.makeRelative(phiHbyA);
 
 adjustPhi(phiHbyA, U, p);
-
 // Update the pressure BCs to ensure flux consistency
 constrainPressure(p, U, phiHbyA, rAU, MRF);
 

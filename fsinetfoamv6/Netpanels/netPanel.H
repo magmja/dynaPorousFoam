@@ -99,7 +99,7 @@ public:
     ~netPanel();
 
     // public Member Functions
-    void addResistance(
+    void addResistanceU(
         fvVectorMatrix &UEqn,
         const fvMesh &mesh) const;
 

@@ -196,7 +196,7 @@ Foam::netPanel::~netPanel() {
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
-void Foam::netPanel::addResistance(
+void Foam::netPanel::addResistanceU(
         fvVectorMatrix &UEqn,
         const fvMesh &mesh) const
 {
