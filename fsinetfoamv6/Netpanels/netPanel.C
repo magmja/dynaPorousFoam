@@ -312,7 +312,7 @@ void Foam::netPanel::updateVelocity(
                 Info << "Warnning!!! I cannot find the nearest cell to point " << EP_center
                      << " , because the minimum distance to this point is  " << maxDistance << "\n"
                      << endl;
-                std::exit(1);
+//                std::exit(1);
             }
         }
         fluidVelocity_memb = fluidVelocities; // only assige onece
