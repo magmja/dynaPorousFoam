@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
         // need to confirm ... might be wrong data structure
         Info<< "\nStart fsi function..."<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         if (exists("./constant/position_flag")) {
-            sleep(0.1);
+            sleep(0.001);
             IOdictionary structuralPositions(
                     IOobject(
                             "posi",
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
         Info<< " Finish updatePoroField"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
         if (exists("./constant/fh_flag")){
-            sleep(0.1);
+            sleep(0.001);
             IOdictionary structuralFh(
                     IOobject(
                             "Fh",
@@ -114,7 +114,9 @@ int main(int argc, char *argv[])
                             mesh,
                             IOobject::READ_IF_PRESENT,
                             IOobject::NO_WRITE));
+            Info<< " Start Fh reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
             Nettings.readForce(runTime.value(),structuralFh);
+            Info<< " Finish Fh reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         }
 
         List<pointField> gatheredU(numberP);
