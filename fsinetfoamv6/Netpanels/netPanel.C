@@ -360,13 +360,13 @@ void Foam::netPanel::readForce(
         Info << "Warning!!! The difference of time in FE and FV solvers exceeds 10 s!\n" << endl;
     }
 
-    List <vector> Fh(listLength, vector::zero);
-    forAll(Fh, i)
+    List <vector> Fh_force(listLength, vector::zero);
+    forAll(Fh_force, i)
     {
         word force_name("fh" + Foam::name(i));
-        Fh[i] = structuralForces.lookup(force_name);
+        Fh_force[i] = structuralForces.lookup(force_name);
     }
-    structuralForces_memb = Fh;
+    structuralForces_memb = Fh_force;
 }
 
 // * * * * * * * * * * * * * * Friend Operators * * * * * * * * * * * * * * //
