@@ -91,66 +91,44 @@ int main(int argc, char *argv[])
         // need to confirm ... might be wrong data structure
         Info<< "\nStart fsi function..."<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
-        if (exists("./constant/position_flag")) {
-            Info<< " position_flag is exists"<<endl;
-            IOdictionary structuralPositions(
-                    IOobject(
-                            "posi",
-                            runTime.constant(),
-                            mesh,
-                            IOobject::READ_IF_PRESENT,
-                            IOobject::NO_WRITE));
-            Info<< "  Start posi reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-            Nettings.readPosi(structuralPositions);
-            Info<< "  Start posi reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
+        while (not exists("./constant/position_flag")) {
+            sleep(0.01);
+            Info<<"   Waiting 0.01s for posi"<<endl;
         }
-        else{
-            sleep(0.5);
-            Info<< " After sleep 0.1s, position_flag is exists"<<endl;
-            IOdictionary structuralPositions(
-                    IOobject(
-                            "posi",
-                            runTime.constant(),
-                            mesh,
-                            IOobject::READ_IF_PRESENT,
-                            IOobject::NO_WRITE));
-            Info<< "  Start posi reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-            Nettings.readPosi(structuralPositions);
-            Info<< "  Start posi reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-        }
+
+        Info<< " position_flag is exists"<<endl;
+        IOdictionary structuralPositions(
+                IOobject(
+                        "posi",
+                        runTime.constant(),
+                        mesh,
+                        IOobject::READ_IF_PRESENT,
+                        IOobject::NO_WRITE));
+        Info<< "  Start posi reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
+        Nettings.readPosi(structuralPositions);
+        Info<< "  Start posi reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
+
 
         Info<< "\n Start updatePoroField"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
         Nettings.updatePoroField(porosityField, mesh);
         Info<< " Finish updatePoroField"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
-        if (exists("./constant/fh_flag")){
-            Info<< " fh_flag is exists"<<endl;
-            IOdictionary structuralFh(
-                    IOobject(
-                            "Fh",
-                            runTime.constant(),
-                            mesh,
-                            IOobject::READ_IF_PRESENT,
-                            IOobject::NO_WRITE));
-            Info<< "  Start Fh reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-            Nettings.readForce(runTime.value(),structuralFh);
-            Info<< "  Finish Fh reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
+        while (not exists("./constant/fh_flag")){
+            sleep(0.01);
+            Info<<"   Waiting 0.01s for fh"<<endl;
         }
-        else
-        {
-            sleep(0.5);
-            Info<< " After sleep 0.1s, fh_flag is exists"<<endl;
-            IOdictionary structuralFh(
-                    IOobject(
-                            "Fh",
-                            runTime.constant(),
-                            mesh,
-                            IOobject::READ_IF_PRESENT,
-                            IOobject::NO_WRITE));
-            Info<< " Start Fh reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-            Nettings.readForce(runTime.value(),structuralFh);
-            Info<< " Finish Fh reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
-        }
+
+        Info<< " fh_flag is exists"<<endl;
+        IOdictionary structuralFh(
+                IOobject(
+                        "Fh",
+                        runTime.constant(),
+                        mesh,
+                        IOobject::READ_IF_PRESENT,
+                        IOobject::NO_WRITE));
+        Info<< "  Start Fh reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
+        Nettings.readForce(runTime.value(),structuralFh);
+        Info<< "  Finish Fh reading"<< "  ClockTime = " << runTime.elapsedClockTime() << " s"<<endl;
 
         List<pointField> gatheredU(numberP);
         gatheredU[Pstream::myProcNo()] = pointField(U);
